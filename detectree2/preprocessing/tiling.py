@@ -205,10 +205,11 @@ def tile_data(
 
                 # save this as jpg or png...we are going for png...again, named with the origin of the specific tile
                 # here as a naughty method
-                cv2.imwrite(
-                    str(out_path_root.with_suffix(out_path_root.suffix + ".png").resolve()),
-                    dualstack_rescaled,
-                )
+                
+                # The patches will be saved as tif files instead of png files
+                tiff.imwrite(
+                    str(out_path_root.with_suffix(out_path_root.suffix + ".tiff").resolve()),
+                    dualstack_rescaled)
             
 
             if tile_count % 50 == 0:
@@ -379,11 +380,8 @@ def tile_data_train(  # noqa: C901
                     dualstack_rescaled = dualstack  # scale to image
                 print("Dieser Code wird tatsächlich ausgeführt")
 
-                cv2.imwrite(
-                    str(out_path_root.with_suffix(out_path_root.suffix + ".png").resolve()),
-                    dualstack_rescaled,
-                )
-
+                
+                # The patches will be saved as tif files instead of png files
                 tiff.imwrite(
                     str(out_path_root.with_suffix(out_path_root.suffix + ".tiff").resolve()),
                     dualstack_rescaled)
