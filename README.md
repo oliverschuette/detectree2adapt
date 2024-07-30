@@ -1,3 +1,5 @@
+Attention: This an adaption of detectree2 for a single project of my own! Please use the original detectree2 package for tree delineation!
+
 <p align="left">
 <img width="350" alt="predictions" src= ./.github/logo.png#gh-light-mode-only>
 <img width="350" alt="predictions" src= ./.github/logo_dark.png#gh-dark-mode-only>
