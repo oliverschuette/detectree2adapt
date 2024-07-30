@@ -16,6 +16,7 @@ import cv2
 import geopandas as gpd
 import numpy as np
 import rasterio
+import tifffile as tiff
 from fiona.crs import from_epsg  # noqa: F401
 from rasterio.crs import CRS
 from rasterio.io import DatasetReader
@@ -382,6 +383,10 @@ def tile_data_train(  # noqa: C901
                     str(out_path_root.with_suffix(out_path_root.suffix + ".png").resolve()),
                     dualstack_rescaled,
                 )
+
+                tiff.imwrite(
+                    str(out_path_root.with_suffix(out_path_root.suffix + ".tiff").resolve()),
+                    dualstack_rescaled)
 
             # select the crowns that intersect the non-buffered central
             # section of the tile using the inner join
