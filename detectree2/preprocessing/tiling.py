@@ -54,6 +54,7 @@ def tile_data(
     tile_width: int = 200,
     tile_height: int = 200,
     dtype_bool: bool = False,
+    multitemp: bool = False,
 ) -> None:
     """Tiles up orthomosaic for making predictions on.
 
@@ -67,6 +68,7 @@ def tile_data(
         tile_width: Tile width in meters
         tile_height: Tile height in meters
         dtype_bool: Flag to edit dtype to prevent black tiles
+        multitemp: Changes the channels for tiling regarding this boolean
 
     Returns:
         None
@@ -157,27 +159,57 @@ def tile_data(
             arr = clipped.read()
 
             # each band of the tiled tiff is a colour!
-            r = arr[0]
-            g = arr[1]
-            b = arr[2]
+            if multitemp == False:
+                r = arr[0]
+                g = arr[1]
+                b = arr[2]
 
-            # stack up the bands in an order appropriate for saving with cv2,
-            # then rescale to the correct 0-255 range for cv2
+                # stack up the bands in an order appropriate for saving with cv2,
+                # then rescale to the correct 0-255 range for cv2
 
-            rgb = np.dstack((b, g, r))  # BGR for cv2
+                rgb = np.dstack((b, g, r))  # BGR for cv2
 
-            if np.max(g) > 255:
-                rgb_rescaled = 255 * rgb / 65535
+                if np.max(g) > 255:
+                    rgb_rescaled = 255 * rgb / 65535
+                else:
+                    rgb_rescaled = rgb  # scale to image
+                # print("rgb rescaled", rgb_rescaled)
+
+                # save this as jpg or png...we are going for png...again, named with the origin of the specific tile
+                # here as a naughty method
+                cv2.imwrite(
+                    str(out_path_root.with_suffix(out_path_root.suffix + ".png").resolve()),
+                    rgb_rescaled,
+                )
+
             else:
-                rgb_rescaled = rgb  # scale to image
-            # print("rgb rescaled", rgb_rescaled)
+                nir1 = arr[0]
+                r1 = arr[1]
+                g1 = arr[2]
+                r2 = arr[3]
+                g2 = arr[4]
+                b2 = arr[5]
+                nir2 = arr[6]
 
-            # save this as jpg or png...we are going for png...again, named with the origin of the specific tile
-            # here as a naughty method
-            cv2.imwrite(
-                str(out_path_root.with_suffix(out_path_root.suffix + ".png").resolve()),
-                rgb_rescaled,
-            )
+                # stack up the bands in an order appropriate for saving with cv2,
+                # then rescale to the correct 0-255 range for cv2
+
+                dualstack = np.dstack((nir1, r1, g1, r2, g2, b2, nir2))  # BGR for cv2
+
+                if np.max(g1) > 255:
+                    dualstack_rescaled = 255 * dualstack / 65535
+                else:
+                    dualstack_rescaled = dualstack  # scale to image
+                print("Dieser Code wird tatsächlich ausgeführt")
+
+                # save this as jpg or png...we are going for png...again, named with the origin of the specific tile
+                # here as a naughty method
+                cv2.imwrite(
+                    str(out_path_root.with_suffix(out_path_root.suffix + ".png").resolve()),
+                    dualstack_rescaled,
+                )
+            
+
             if tile_count % 50 == 0:
                 print(f"Processed {tile_count} tiles of {total_tiles} tiles")
 
@@ -194,6 +226,7 @@ def tile_data_train(  # noqa: C901
     threshold: float = 0,
     nan_threshold: float = 0.1,
     dtype_bool: bool = False,
+    multitemp: bool = False,
 ) -> None:
     """Tiles up orthomosaic and corresponding crowns into training tiles.
 
@@ -301,29 +334,54 @@ def tile_data_train(  # noqa: C901
             # read it as an array
             arr = clipped.read()
 
-            # each band of the tiled tiff is a colour!
-            r = arr[0]
-            g = arr[1]
-            b = arr[2]
+             # each band of the tiled tiff is a colour!
+            if multitemp == False:
+                r = arr[0]
+                g = arr[1]
+                b = arr[2]
 
-            # stack up the bands in an order appropriate for saving with cv2, then rescale to the correct 0-255 range
-            # for cv2. BGR ordering is correct for cv2 (and detectron2)
-            rgb = np.dstack((b, g, r))
+                # stack up the bands in an order appropriate for saving with cv2,
+                # then rescale to the correct 0-255 range for cv2
 
-            # Some rasters need to have values rescaled to 0-255
-            # TODO: more robust check
-            if np.max(g) > 255:
-                rgb_rescaled = 255 * rgb / 65535
+                rgb = np.dstack((b, g, r))  # BGR for cv2
+
+                if np.max(g) > 255:
+                    rgb_rescaled = 255 * rgb / 65535
+                else:
+                    rgb_rescaled = rgb  # scale to image
+                # print("rgb rescaled", rgb_rescaled)
+
+                # save this as jpg or png...we are going for png...again, named with the origin of the specific tile
+                # here as a naughty method
+                cv2.imwrite(
+                    str(out_path_root.with_suffix(out_path_root.suffix + ".png").resolve()),
+                    rgb_rescaled,
+                )
+
             else:
-                # scale to image
-                rgb_rescaled = rgb
+                nir1 = arr[0]
+                r1 = arr[1]
+                g1 = arr[2]
+                r2 = arr[3]
+                g2 = arr[4]
+                b2 = arr[5]
+                nir2 = arr[6]
 
-            # save this as png, named with the origin of the specific tile
-            # potentially bad practice
-            cv2.imwrite(
-                str(out_path_root.with_suffix(out_path_root.suffix + ".png").resolve()),
-                rgb_rescaled,
-            )
+                # stack up the bands in an order appropriate for saving with cv2,
+                # then rescale to the correct 0-255 range for cv2
+
+                dualstack = np.dstack((nir1, r1, g1, r2, g2, b2, nir2))  # BGR for cv2
+
+                if np.max(g1) > 255:
+                    dualstack_rescaled = 255 * dualstack / 65535
+                else:
+                    dualstack_rescaled = dualstack  # scale to image
+                print("Dieser Code wird tatsächlich ausgeführt")
+
+                cv2.imwrite(
+                    str(out_path_root.with_suffix(out_path_root.suffix + ".png").resolve()),
+                    dualstack_rescaled,
+                )
 
             # select the crowns that intersect the non-buffered central
             # section of the tile using the inner join
