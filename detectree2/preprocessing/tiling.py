@@ -160,7 +160,7 @@ def tile_data(
             arr = clipped.read()
 
             # each band of the tiled tiff is a colour!
-            if multitemp == False:
+            if multitemp is False:
                 r = arr[0]
                 g = arr[1]
                 b = arr[2]
@@ -211,7 +211,6 @@ def tile_data(
                     str(out_path_root.with_suffix(out_path_root.suffix + ".tiff").resolve()),
                     dualstack_rescaled)
             
-
             if tile_count % 50 == 0:
                 print(f"Processed {tile_count} tiles of {total_tiles} tiles")
 
@@ -244,6 +243,7 @@ def tile_data_train(  # noqa: C901
         threshold: Min proportion of the tile covered by crowns to be accepted {0,1}
         nan_theshold: Max proportion of tile covered by nans
         dtype_bool: Flag to edit dtype to prevent black tiles
+        multitemp: Changes the channels for tiling regarding this boolean
 
     Returns:
         None
@@ -337,7 +337,7 @@ def tile_data_train(  # noqa: C901
             arr = clipped.read()
 
              # each band of the tiled tiff is a colour!
-            if multitemp == False:
+            if multitemp is False:
                 r = arr[0]
                 g = arr[1]
                 b = arr[2]
@@ -380,7 +380,6 @@ def tile_data_train(  # noqa: C901
                     dualstack_rescaled = dualstack  # scale to image
                 print("Dieser Code wird tatsächlich ausgeführt")
 
-                
                 # The patches will be saved as tif files instead of png files
                 tiff.imwrite(
                     str(out_path_root.with_suffix(out_path_root.suffix + ".tiff").resolve()),

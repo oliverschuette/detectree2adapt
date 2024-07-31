@@ -25,6 +25,7 @@ setup(
         "fiona",
         "pycrs",
         "descartes",
+        "tifffile",
         "detectron2@git+https://github.com/facebookresearch/detectron2.git",
     ],
 )
