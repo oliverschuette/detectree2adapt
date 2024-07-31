@@ -673,8 +673,14 @@ def setup_cfg(
         init.kaiming_normal_(conv1.weight, mode='fan_out', nonlinearity='relu')
         backbone.bottom_up.stem.conv1 = conv1
 
-        # Return the changed backbone
-        cfg.MODEL.BACKBONE = backbone
+        print("This is my first backbone", backbone)
+
+        backbone = build_backbone(cfg, 6)
+
+        print("This is my second backbone", backbone)
+
+        # Return the changed backbone (this does not work)
+        #cfg.MODEL.BACKBONE = backbone
 
     else:
         cfg.MODEL.PIXEL_MEAN = [103.530, 116.280, 123.675]
