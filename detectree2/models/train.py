@@ -661,18 +661,14 @@ def setup_cfg(
         backbone = build_backbone(cfg)
         #backbone[0].conv1 = torch.nn.Conv2d(6, 64, kernel_size=7, stride=2, padding=3, bias=False)
 
-        # Access the ResNet backbone specifically
-        if isinstance(backbone, ResNet):
-            print("We have a ResNet here!")
-
-            # Modify the first convolutional layer to accept 7 input channels
-            backbone.stem.conv1 = torch.nn.Conv2d(6, 64, kernel_size=7, stride=2, padding=3, bias=False)
+        # Modify the first convolutional layer to accept 7 input channels
+        backbone.stem.conv1 = torch.nn.Conv2d(6, 64, kernel_size=7, stride=2, padding=3, bias=False)
             
-            # Reinitialize the weights or use your custom initialization method
-            torch.nn.init.kaiming_normal_(backbone.stem.conv1.weight, mode='fan_out', nonlinearity='relu')
+        # Reinitialize the weights or use your custom initialization method
+        torch.nn.init.kaiming_normal_(backbone.stem.conv1.weight, mode='fan_out', nonlinearity='relu')
 
-            # Return the changed backbone
-            cfg.MODEL.BACKBONE = backbone
+        # Return the changed backbone
+        cfg.MODEL.BACKBONE = backbone
 
     else:
         cfg.MODEL.PIXEL_MEAN = [103.530, 116.280, 123.675]
