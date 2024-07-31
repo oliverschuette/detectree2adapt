@@ -28,12 +28,11 @@ from detectron2.data import (
     build_detection_test_loader,
     build_detection_train_loader,
 )
-from detectron2.modeling.backbone import ResNet
 from detectron2.engine import DefaultTrainer
 from detectron2.engine.hooks import HookBase
 from detectron2.evaluation import COCOEvaluator, verify_results
 from detectron2.evaluation.coco_evaluation import instances_to_coco_json
-from detectron2.modeling.backbone import build_backbone
+from detectron2.modeling.backbone import ResNet, build_backbone
 from detectron2.structures import BoxMode
 from detectron2.utils.events import get_event_storage  # noqa:F401
 from detectron2.utils.events import EventStorage
