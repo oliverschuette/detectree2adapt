@@ -662,10 +662,16 @@ def setup_cfg(
         #backbone[0].conv1 = torch.nn.Conv2d(6, 64, kernel_size=7, stride=2, padding=3, bias=False)
 
         # Modify the first convolutional layer to accept 7 input channels
-        backbone.stem.conv1 = torch.nn.Conv2d(6, 64, kernel_size=7, stride=2, padding=3, bias=False)
+        #backbone.stem.conv1 = torch.nn.Conv2d(6, 64, kernel_size=7, stride=2, padding=3, bias=False)
             
         # Reinitialize the weights or use your custom initialization method
-        torch.nn.init.kaiming_normal_(backbone.stem.conv1.weight, mode='fan_out', nonlinearity='relu')
+        #torch.nn.init.kaiming_normal_(backbone.stem.conv1.weight, mode='fan_out', nonlinearity='relu')
+
+        # Another try
+        conv1 = backbone.bottom_up.stem.conv1
+        conv1 = nn.Conv2d(6, 64, kernel_size=7, stride=2, padding=3, bias=False)
+        init.kaiming_normal_(conv1.weight, mode='fan_out', nonlinearity='relu')
+        backbone.bottom_up.stem.conv1 = conv1
 
         # Return the changed backbone
         cfg.MODEL.BACKBONE = backbone
