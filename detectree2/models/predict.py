@@ -38,8 +38,7 @@ def predict_on_data(
         dataset_dicts = get_tree_dicts(directory)
     else:
         dataset_dicts = get_filenames(directory)
-        print("Hello123", dataset_dicts)
-
+        print("The dicts", dataset_dicts, "The directory", directory)
     total_files = len(dataset_dicts)
 
     # Works out if all items in folder should be predicted on

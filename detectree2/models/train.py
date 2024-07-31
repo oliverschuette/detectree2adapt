@@ -501,7 +501,8 @@ def get_filenames(directory: str):
     dataset_dicts = []
 
     # Changed .png to .tif here
-    files = glob.glob(directory + "*.tif")
+    files = glob.glob(directory + "*.tiff")
+    print("The needed files", files)
     for filename in [file for file in files]:
         file = {}
         filename = os.path.join(directory, filename)
