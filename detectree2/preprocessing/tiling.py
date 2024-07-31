@@ -55,7 +55,7 @@ def tile_data(
     tile_width: int = 200,
     tile_height: int = 200,
     dtype_bool: bool = False,
-    multitemp: bool = False,
+    multitemp: int = 0,
 ) -> None:
     """Tiles up orthomosaic for making predictions on.
 
@@ -69,7 +69,7 @@ def tile_data(
         tile_width: Tile width in meters
         tile_height: Tile height in meters
         dtype_bool: Flag to edit dtype to prevent black tiles
-        multitemp: Changes the channels for tiling regarding this boolean
+        multitemp: Changes whether we only have the CIR Imagery (1), the RGBI Imagery (2) or both Imagery types (3) available
 
     Returns:
         None
@@ -160,15 +160,17 @@ def tile_data(
             arr = clipped.read()
 
             # each band of the tiled tiff is a colour!
-            if multitemp is False:
-                r = arr[0]
-                g = arr[1]
-                b = arr[2]
+
+            # Case 1, we only have the CIR-Orthophoto
+            if multitemp == 1:
+                nir = arr[0]
+                r = arr[1]
+                g = arr[2]
 
                 # stack up the bands in an order appropriate for saving with cv2,
                 # then rescale to the correct 0-255 range for cv2
 
-                rgb = np.dstack((b, g, r))  # BGR for cv2
+                rgb = np.dstack((nir, r, g))  # BGR for cv2
 
                 if np.max(g) > 255:
                     rgb_rescaled = 255 * rgb / 65535
@@ -178,11 +180,40 @@ def tile_data(
 
                 # save this as jpg or png...we are going for png...again, named with the origin of the specific tile
                 # here as a naughty method
-                cv2.imwrite(
-                    str(out_path_root.with_suffix(out_path_root.suffix + ".png").resolve()),
-                    rgb_rescaled,
-                )
+                #cv2.imwrite(str(out_path_root.with_suffix(out_path_root.suffix + ".png").resolve()),rgb_rescaled,)
+                    
+                # To make things more simple, we are using .tiffs here again
+                tiff.imwrite(
+                    str(out_path_root.with_suffix(out_path_root.suffix + ".tiff").resolve()),
+                    rgb_rescaled)
 
+            # Case 2, we only have the RGBI-Orthophoto
+            elif multitemp == 2:
+                nir = arr[3]
+                r = arr[0]
+                g = arr[1]
+
+                # stack up the bands in an order appropriate for saving with cv2,
+                # then rescale to the correct 0-255 range for cv2
+
+                rgb = np.dstack((nir, r, g))  # BGR for cv2
+
+                if np.max(g) > 255:
+                    rgb_rescaled = 255 * rgb / 65535
+                else:
+                    rgb_rescaled = rgb  # scale to image
+                # print("rgb rescaled", rgb_rescaled)
+
+                # save this as jpg or png...we are going for png...again, named with the origin of the specific tile
+                # here as a naughty method
+                #cv2.imwrite(str(out_path_root.with_suffix(out_path_root.suffix + ".png").resolve()), rgb_rescaled,)
+
+                # To make things more simple, we are using .tiffs here again
+                tiff.imwrite(
+                    str(out_path_root.with_suffix(out_path_root.suffix + ".tiff").resolve()),
+                    rgb_rescaled)
+
+            # Case 3, we have both imagery types together
             else:
                 nir1 = arr[0]
                 r1 = arr[1]
@@ -195,13 +226,13 @@ def tile_data(
                 # stack up the bands in an order appropriate for saving with cv2,
                 # then rescale to the correct 0-255 range for cv2
 
-                dualstack = np.dstack((nir1, r1, g1, r2, g2, b2, nir2))  # BGR for cv2
+                dualstack = np.dstack((nir1, r1, g1, nir2, r2, g2))  # BGR for cv2
 
-                if np.max(g1) > 255:
+                if np.max(g1) > 255 or np.max(g2) > 255:
                     dualstack_rescaled = 255 * dualstack / 65535
                 else:
                     dualstack_rescaled = dualstack  # scale to image
-                print("Dieser Code wird tatsächlich ausgeführt")
+                # print("Dieser Code wird tatsächlich ausgeführt")
 
                 # save this as jpg or png...we are going for png...again, named with the origin of the specific tile
                 # here as a naughty method
@@ -227,7 +258,7 @@ def tile_data_train(  # noqa: C901
     threshold: float = 0,
     nan_threshold: float = 0.1,
     dtype_bool: bool = False,
-    multitemp: bool = False,
+    multitemp: int = 0,
 ) -> None:
     """Tiles up orthomosaic and corresponding crowns into training tiles.
 
@@ -243,7 +274,7 @@ def tile_data_train(  # noqa: C901
         threshold: Min proportion of the tile covered by crowns to be accepted {0,1}
         nan_theshold: Max proportion of tile covered by nans
         dtype_bool: Flag to edit dtype to prevent black tiles
-        multitemp: Changes the channels for tiling regarding this boolean
+        multitemp: Changes whether we only have the CIR Imagery (1), the RGBI Imagery (2) or both Imagery types (3) available
 
     Returns:
         None
@@ -337,15 +368,17 @@ def tile_data_train(  # noqa: C901
             arr = clipped.read()
 
              # each band of the tiled tiff is a colour!
-            if multitemp is False:
-                r = arr[0]
-                g = arr[1]
-                b = arr[2]
+            
+            # Case 1, we only have the CIR-Orthophoto
+            if multitemp == 1:
+                nir = arr[0]
+                r = arr[1]
+                g = arr[2]
 
                 # stack up the bands in an order appropriate for saving with cv2,
                 # then rescale to the correct 0-255 range for cv2
 
-                rgb = np.dstack((b, g, r))  # BGR for cv2
+                rgb = np.dstack((nir, r, g))  # BGR for cv2
 
                 if np.max(g) > 255:
                     rgb_rescaled = 255 * rgb / 65535
@@ -355,11 +388,40 @@ def tile_data_train(  # noqa: C901
 
                 # save this as jpg or png...we are going for png...again, named with the origin of the specific tile
                 # here as a naughty method
-                cv2.imwrite(
-                    str(out_path_root.with_suffix(out_path_root.suffix + ".png").resolve()),
-                    rgb_rescaled,
-                )
+                #cv2.imwrite(str(out_path_root.with_suffix(out_path_root.suffix + ".png").resolve()), rgb_rescaled,)
 
+                # To make things more simple, we are using .tiffs here again
+                tiff.imwrite(
+                    str(out_path_root.with_suffix(out_path_root.suffix + ".tiff").resolve()),
+                    rgb_rescaled)
+
+            # Case 2, we only have the RGBI-Orthophoto
+            elif multitemp == 2:
+                nir = arr[3]
+                r = arr[0]
+                g = arr[1]
+
+                # stack up the bands in an order appropriate for saving with cv2,
+                # then rescale to the correct 0-255 range for cv2
+
+                rgb = np.dstack((nir, r, g))  # BGR for cv2
+
+                if np.max(g) > 255:
+                    rgb_rescaled = 255 * rgb / 65535
+                else:
+                    rgb_rescaled = rgb  # scale to image
+                # print("rgb rescaled", rgb_rescaled)
+
+                # save this as jpg or png...we are going for png...again, named with the origin of the specific tile
+                # here as a naughty method
+                #cv2.imwrite(str(out_path_root.with_suffix(out_path_root.suffix + ".png").resolve()), rgb_rescaled,)
+
+                # To make things more simple, we are using .tiffs here again
+                tiff.imwrite(
+                    str(out_path_root.with_suffix(out_path_root.suffix + ".tiff").resolve()),
+                    rgb_rescaled)
+
+            # Case 3, we have both imagery types together
             else:
                 nir1 = arr[0]
                 r1 = arr[1]
@@ -372,13 +434,13 @@ def tile_data_train(  # noqa: C901
                 # stack up the bands in an order appropriate for saving with cv2,
                 # then rescale to the correct 0-255 range for cv2
 
-                dualstack = np.dstack((nir1, r1, g1, r2, g2, b2, nir2))  # BGR for cv2
+                dualstack = np.dstack((nir1, r1, g1, nir2, r2, g2))  # BGR for cv2
 
-                if np.max(g1) > 255:
+                if np.max(g1) > 255 or np.max(g2) > 255:
                     dualstack_rescaled = 255 * dualstack / 65535
                 else:
                     dualstack_rescaled = dualstack  # scale to image
-                print("Dieser Code wird tatsächlich ausgeführt")
+                # print("Dieser Code wird tatsächlich ausgeführt")
 
                 # The patches will be saved as tif files instead of png files
                 tiff.imwrite(
@@ -401,7 +463,8 @@ def tile_data_train(  # noqa: C901
             scalingy = -1 / (data.transform[4])
             moved_scaled = moved.scale(scalingx, scalingy, origin=(0, 0))
 
-            impath = {"imagePath": out_path_root.with_suffix(out_path_root.suffix + ".png").as_posix()}
+            # Was a .png file before, is that correct that this info is just there to ignore the .pngs (seems like it, but we want to get the .tifs)
+            impath = {"imagePath": out_path_root.with_suffix(out_path_root.suffix + ".tiff").as_posix()}
 
             # Save as a geojson, a format compatible with detectron2, again named by the origin of the tile.
             # If the box selected from the image is outside of the mapped region due to the image being on a slant
@@ -551,7 +614,8 @@ def to_traintest_folders(  # noqa: C901
     Path(out_dir / "train").mkdir(parents=True, exist_ok=True)
     Path(out_dir / "test").mkdir(parents=True, exist_ok=True)
 
-    file_names = tiles_dir.glob("*.png")
+    # Was a .png before
+    file_names = tiles_dir.glob("*.tiff")
     file_roots = [item.stem for item in file_names]
 
     num = list(range(0, len(file_roots)))
