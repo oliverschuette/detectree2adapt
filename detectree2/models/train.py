@@ -37,6 +37,7 @@ from detectron2.utils.events import get_event_storage  # noqa:F401
 from detectron2.utils.events import EventStorage
 from detectron2.utils.logger import log_every_n_seconds
 from detectron2.utils.visualizer import ColorMode, Visualizer
+from detectron2.modeling.backbone import build_backbone
 
 # from IPython.display import display
 # from PIL import Image
@@ -604,6 +605,7 @@ def setup_cfg(
     eval_period=100,
     out_dir="./train_outputs",
     resize=True,
+    multitemp=False
 ):
     """Set up config object # noqa: D417.
 
@@ -645,6 +647,14 @@ def setup_cfg(
         cfg.MODEL.WEIGHTS = update_model
     else:
         cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(base_model)
+
+    # Just copy the ImageNet-Values two times for consistency (despite the wrong order)
+    if multitemp is True:
+        cfg.MODEL.PIXEL_MEAN = [103.530, 116.280, 123.675, 103.530, 116.280, 123.675]
+        cfg.MODEL.PIXEL_STD = [57.375, 57.120, 58.395, 57.375, 57.120, 58.395]
+    else:
+        cfg.MODEL.PIXEL_MEAN = [103.530, 116.280, 123.675]
+        cfg.MODEL.PIXEL_STD = [57.375, 57.120, 58.395]
 
     cfg.SOLVER.IMS_PER_BATCH = ims_per_batch
     cfg.SOLVER.BASE_LR = base_lr
