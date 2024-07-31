@@ -28,6 +28,7 @@ from detectron2.data import (
     build_detection_test_loader,
     build_detection_train_loader,
 )
+from detectron2.modeling.backbone import ResNet
 from detectron2.engine import DefaultTrainer
 from detectron2.engine.hooks import HookBase
 from detectron2.evaluation import COCOEvaluator, verify_results
@@ -657,11 +658,15 @@ def setup_cfg(
 
         # Ensure the input channels match your data
         backbone = build_backbone(cfg)
-        backbone[0].conv1 = torch.nn.Conv2d(6, 64, kernel_size=7, stride=2, padding=3, bias=False)
+        #backbone[0].conv1 = torch.nn.Conv2d(6, 64, kernel_size=7, stride=2, padding=3, bias=False)
 
-        # Reinitialize the weights or use your custom initialization method
-        cfg.MODEL.BACKBONE = backbone
-
+        # Access the ResNet backbone specifically
+        if isinstance(backbone, ResNet):
+            # Modify the first convolutional layer to accept 7 input channels
+            backbone.stem.conv1 = torch.nn.Conv2d(6, 64, kernel_size=7, stride=2, padding=3, bias=False)
+            
+            # Return the changed backbone
+            cfg.MODEL.BACKBONE = backbone
         # Reinitialize the weights or use your custom initialization method
         #torch.nn.init.kaiming_normal_(backbone[0].conv1.weight, mode='fan_out', nonlinearity='relu')
 
