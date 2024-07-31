@@ -652,6 +652,19 @@ def setup_cfg(
     if multitemp is True:
         cfg.MODEL.PIXEL_MEAN = [103.530, 116.280, 123.675, 103.530, 116.280, 123.675]
         cfg.MODEL.PIXEL_STD = [57.375, 57.120, 58.395, 57.375, 57.120, 58.395]
+        
+       # Try to adjust the backbone model and adapt it for our needs
+
+        # Ensure the input channels match your data
+        backbone = build_backbone(cfg)
+        backbone[0].conv1 = torch.nn.Conv2d(6, 64, kernel_size=7, stride=2, padding=3, bias=False)
+
+        # Reinitialize the weights or use your custom initialization method
+        cfg.MODEL.BACKBONE = backbone
+
+        # Reinitialize the weights or use your custom initialization method
+        #torch.nn.init.kaiming_normal_(backbone[0].conv1.weight, mode='fan_out', nonlinearity='relu')
+
     else:
         cfg.MODEL.PIXEL_MEAN = [103.530, 116.280, 123.675]
         cfg.MODEL.PIXEL_STD = [57.375, 57.120, 58.395]
