@@ -18,6 +18,8 @@ import detectron2.data.transforms as T  # noqa:N812
 import detectron2.utils.comm as comm
 import numpy as np
 import torch
+import torch.nn as nn
+import torch.nn.init as init
 from detectron2 import model_zoo
 from detectron2.checkpoint import DetectionCheckpointer  # noqa:F401
 from detectron2.config import get_cfg
