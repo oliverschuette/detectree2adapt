@@ -38,7 +38,7 @@ def predict_on_data(
         dataset_dicts = get_tree_dicts(directory)
     else:
         dataset_dicts = get_filenames(directory)
-        print("The dicts", dataset_dicts, "The directory", directory)
+ 
     total_files = len(dataset_dicts)
 
     # Works out if all items in folder should be predicted on
@@ -51,7 +51,6 @@ def predict_on_data(
 
     for i, d in enumerate(dataset_dicts[:num_to_pred], start=1):
         img = cv2.imread(d["file_name"])
-        print("Name of the file", d["file_name"])
 
         outputs = predictor(img)
 
