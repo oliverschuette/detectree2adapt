@@ -7,6 +7,7 @@ import os
 from pathlib import Path
 
 import cv2
+import tifffile as tiff
 from detectron2.engine import DefaultPredictor
 from detectron2.evaluation.coco_evaluation import instances_to_coco_json
 
@@ -50,8 +51,13 @@ def predict_on_data(
     print(f"Predicting {num_to_pred} files")
 
     for i, d in enumerate(dataset_dicts[:num_to_pred], start=1):
-        img = cv2.imread(d["file_name"])
+        #img = cv2.imread(d["file_name"])
+
+        # Could we load in the data like this??
+        img = tiff.imread(d["file_name"])
+
         print("Whats interesting", d["file_name"], img)
+
         outputs = predictor(img)
 
         # Creating the file name of the output file
