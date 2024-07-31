@@ -667,7 +667,7 @@ def setup_cfg(
         # Reinitialize the weights or use your custom initialization method
         #torch.nn.init.kaiming_normal_(backbone.stem.conv1.weight, mode='fan_out', nonlinearity='relu')
 
-        # Another try
+        # This actually works!
         conv1 = backbone.bottom_up.stem.conv1
         conv1 = nn.Conv2d(6, 64, kernel_size=7, stride=2, padding=3, bias=False)
         init.kaiming_normal_(conv1.weight, mode='fan_out', nonlinearity='relu')
@@ -675,9 +675,9 @@ def setup_cfg(
 
         print("This is my first backbone", backbone)
 
-        backbone = build_backbone(cfg, 6)
+        #backbone = build_backbone(cfg, 6)
 
-        print("This is my second backbone", backbone)
+        #print("This is my second backbone", backbone)
 
         # Return the changed backbone (this does not work)
         #cfg.MODEL.BACKBONE = backbone
