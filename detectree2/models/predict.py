@@ -56,7 +56,7 @@ def predict_on_data(
         # Could we load in the data like this??
         img = tiff.imread(d["file_name"])
 
-        print("Whats interesting", d["file_name"], img)
+        #print("Whats interesting", d["file_name"], img)
 
         outputs = predictor(img)
 
