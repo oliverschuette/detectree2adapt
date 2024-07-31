@@ -55,7 +55,7 @@ def tile_data(
     tile_width: int = 200,
     tile_height: int = 200,
     dtype_bool: bool = False,
-    multitemp: int = 0,
+    multitemp: int = 1,
 ) -> None:
     """Tiles up orthomosaic for making predictions on.
 
@@ -214,7 +214,7 @@ def tile_data(
                     rgb_rescaled)
 
             # Case 3, we have both imagery types together
-            else:
+            elif multitemp == 3:
                 nir1 = arr[0]
                 r1 = arr[1]
                 g1 = arr[2]
@@ -258,7 +258,7 @@ def tile_data_train(  # noqa: C901
     threshold: float = 0,
     nan_threshold: float = 0.1,
     dtype_bool: bool = False,
-    multitemp: int = 0,
+    multitemp: int = 1,
 ) -> None:
     """Tiles up orthomosaic and corresponding crowns into training tiles.
 
@@ -422,7 +422,7 @@ def tile_data_train(  # noqa: C901
                     rgb_rescaled)
 
             # Case 3, we have both imagery types together
-            else:
+            elif multitemp == 3:
                 nir1 = arr[0]
                 r1 = arr[1]
                 g1 = arr[2]
