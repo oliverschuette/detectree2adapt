@@ -51,7 +51,7 @@ def predict_on_data(
 
     for i, d in enumerate(dataset_dicts[:num_to_pred], start=1):
         img = cv2.imread(d["file_name"])
-
+        print("Whats interesting", d["file_name"], img)
         outputs = predictor(img)
 
         # Creating the file name of the output file
