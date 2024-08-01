@@ -437,7 +437,7 @@ def tile_data_train(  # noqa: C901
                 # stack up the bands in an order appropriate for saving with cv2,
                 # then rescale to the correct 0-255 range for cv2
 
-                dualstack = np.dstack((nir1, r1, g1, nir2, r2, g2))  # BGR for cv2
+                dualstack = np.vstack((nir1, r1, g1, nir2, r2, g2))  # BGR for cv2
 
                 if np.max(g1) > 255 or np.max(g2) > 255:
                     dualstack_rescaled = 255 * dualstack / 65535
@@ -447,7 +447,7 @@ def tile_data_train(  # noqa: C901
 
                 # The patches will be saved as tif files instead of png files
                 try:
-                    # (260, 260, 6)
+                    # (260, 260, 6) if dstack
                     print("Shape of our stack", dualstack_rescaled.shape)
                 except:
                     print("Shape of our stack not available")
@@ -459,10 +459,10 @@ def tile_data_train(  # noqa: C901
                 
                 out_meta.update({
                     "driver": "GTiff",
-                    "height": dualstack_rescaled.shape[0],
-                    "width": dualstack_rescaled.shape[1],
+                    "height": 260,
+                    "width": 260,
                     "transform": out_transform,
-                    "count": dualstack_rescaled.shape[2],
+                    "count": 6,
                     "nodata": None,
                 })
                 print(out_meta)
