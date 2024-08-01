@@ -347,6 +347,7 @@ def tile_data_train(  # noqa: C901
                 continue
 
             out_meta = data.meta.copy()
+            print(out_meta)
             out_meta.update({
                 "driver": "GTiff",
                 "height": out_img.shape[1],
