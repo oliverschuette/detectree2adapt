@@ -463,6 +463,7 @@ def tile_data_train(  # noqa: C901
                     "height": dualstack_rescaled.shape[1],
                     "width": dualstack_rescaled.shape[2],
                     "transform": out_transform,
+                    "count": 6,
                     "nodata": None,
                 })
 
