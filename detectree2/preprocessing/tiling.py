@@ -437,7 +437,7 @@ def tile_data_train(  # noqa: C901
                 # stack up the bands in an order appropriate for saving with cv2,
                 # then rescale to the correct 0-255 range for cv2
 
-                dualstack = np.vstack((nir1, r1, g1, nir2, r2, g2))  # BGR for cv2
+                dualstack = np.stack((nir1, r1, g1, nir2, r2, g2), axis = 0)  # BGR for cv2
 
                 if np.max(g1) > 255 or np.max(g2) > 255:
                     dualstack_rescaled = 255 * dualstack / 65535
