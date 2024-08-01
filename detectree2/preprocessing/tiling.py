@@ -465,7 +465,7 @@ def tile_data_train(  # noqa: C901
                     "count": 6,
                     "nodata": None,
                 })
-                print(out_meta)
+                print("Out Meta", out_meta)
 
                 # dtype needs to be unchanged for some data and set to uint8 for others
                 if dtype_bool:
