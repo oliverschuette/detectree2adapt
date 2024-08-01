@@ -347,7 +347,6 @@ def tile_data_train(  # noqa: C901
                 continue
 
             out_meta = data.meta.copy()
-            print(out_meta)
             out_meta.update({
                 "driver": "GTiff",
                 "height": out_img.shape[1],
@@ -460,12 +459,13 @@ def tile_data_train(  # noqa: C901
                 
                 out_meta.update({
                     "driver": "GTiff",
-                    "height": dualstack_rescaled.shape[1],
-                    "width": dualstack_rescaled.shape[2],
+                    "height": dualstack_rescaled.shape[0],
+                    "width": dualstack_rescaled.shape[1],
                     "transform": out_transform,
-                    "count": 6,
+                    "count": dualstack_rescaled.shape[2],
                     "nodata": None,
                 })
+                print(out_meta)
 
                 # dtype needs to be unchanged for some data and set to uint8 for others
                 if dtype_bool:
