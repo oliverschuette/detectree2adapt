@@ -14,10 +14,10 @@ from pathlib import Path
 from typing import Any, Dict, List
 
 import cv2
-import tifffile as tiff
 import detectron2.data.transforms as T  # noqa:N812
 import detectron2.utils.comm as comm
 import numpy as np
+import tifffile as tiff
 import torch
 import torch.nn as nn
 import torch.nn.init as init
