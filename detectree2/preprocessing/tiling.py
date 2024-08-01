@@ -238,8 +238,11 @@ def tile_data(
                 # here as a naughty method
                 
                 # The patches will be saved as tif files instead of png files
+                print("Shape of our stack", dualstack_rescaled.shape)
+
+                # Changed from .tiff to .tif
                 tiff.imwrite(
-                    str(out_path_root.with_suffix(out_path_root.suffix + ".tiff").resolve()),
+                    str(out_path_root.with_suffix(out_path_root.suffix + ".tif").resolve()),
                     dualstack_rescaled)
             
             if tile_count % 50 == 0:
@@ -443,8 +446,14 @@ def tile_data_train(  # noqa: C901
                 # print("Dieser Code wird tatsächlich ausgeführt")
 
                 # The patches will be saved as tif files instead of png files
+                try:
+                    print("Shape of our stack", dualstack_rescaled.shape)
+                except:
+                    print("Shape of our stack not available")
+                    
+                # .tif instead of .tiff test
                 tiff.imwrite(
-                    str(out_path_root.with_suffix(out_path_root.suffix + ".tiff").resolve()),
+                    str(out_path_root.with_suffix(out_path_root.suffix + ".tif").resolve()),
                     dualstack_rescaled)
 
             # select the crowns that intersect the non-buffered central
@@ -464,7 +473,8 @@ def tile_data_train(  # noqa: C901
             moved_scaled = moved.scale(scalingx, scalingy, origin=(0, 0))
 
             # Was a .png file before, is that correct that this info is just there to ignore the .pngs (seems like it, but we want to get the .tifs)
-            impath = {"imagePath": out_path_root.with_suffix(out_path_root.suffix + ".tiff").as_posix()}
+            # Just describes the image path, changed from .tiff to .tif
+            impath = {"imagePath": out_path_root.with_suffix(out_path_root.suffix + ".tif").as_posix()}
 
             # Save as a geojson, a format compatible with detectron2, again named by the origin of the tile.
             # If the box selected from the image is outside of the mapped region due to the image being on a slant
@@ -614,8 +624,8 @@ def to_traintest_folders(  # noqa: C901
     Path(out_dir / "train").mkdir(parents=True, exist_ok=True)
     Path(out_dir / "test").mkdir(parents=True, exist_ok=True)
 
-    # Was a .png before
-    file_names = tiles_dir.glob("*.tiff")
+    # Was a .png before (changed from .tiff to .tif)
+    file_names = tiles_dir.glob("*.tif")
     file_roots = [item.stem for item in file_names]
 
     num = list(range(0, len(file_roots)))

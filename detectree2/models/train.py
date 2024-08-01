@@ -411,16 +411,19 @@ def get_tree_dicts(directory: str, classes: List[str] = None, classes_at: str = 
     for filename in [file for file in os.listdir(directory) if file.endswith(".geojson")]:
         json_file = os.path.join(directory, filename)
         try:
+            # Json
             print("Get_tree_dicts filename", filename)
         except:
             print("Get_tree_dicts filename Error")
         try:
+            # Json
             print("Get_tree_dicts json_file Names", json_file)
         except:
             print("Get_tree_dicts json_file Names Error")
         with open(json_file) as f:
             img_anns = json.load(f)
             try:
+                # tiff
                 print("Get_tree_dicts img_anns Names", img_anns)
             except:
                 print("Get_tree_dicts img_anns Names Error")
@@ -431,11 +434,10 @@ def get_tree_dicts(directory: str, classes: List[str] = None, classes_at: str = 
         filename = img_anns["imagePath"]
         
         try:
+            # tiff
             print("Get_tree_dicts final filename", filename)
         except:
             print("Get_tree_dicts final filename Error")
-
-
 
         # Make sure we have the correct height and width
         height, width = cv2.imread(filename).shape[:2]
