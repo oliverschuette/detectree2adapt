@@ -633,22 +633,6 @@ def setup_cfg(
     cfg = get_cfg()
     cfg.merge_from_file(model_zoo.get_config_file(base_model))
     cfg.DATASETS.TRAIN = trains
-    try:
-        counter = 0
-        print("Allgemeine Infos zum CFG", cfg.dump())
-        counter = 1
-        print("Meine Trainingsdaten", trains)
-        counter = 2
-        print("Size meiner Trainingsdaten", trains.shape)
-        counter = 3
-        print("Semantic Segment File Name", trains.sem_seg_file_name)
-        counter = 4
-        print("Panoptic Segment File Name", trains.pan_seg_file_name)
-        counter = 5
-    except:
-        print("Occurred at position :", counter)
-
-
     cfg.DATASETS.TEST = tests
     cfg.DATALOADER.NUM_WORKERS = workers
     cfg.SOLVER.IMS_PER_BATCH = ims_per_batch
@@ -669,7 +653,7 @@ def setup_cfg(
     # Just copy the ImageNet-Values two times for consistency (despite the wrong order)
     if multitemp is True:
         cfg.MODEL.PIXEL_MEAN = [103.530, 116.280, 123.675, 103.530, 116.280, 123.675]
-        cfg.MODEL.PIXEL_STD = [57.375, 57.120, 58.395, 57.375, 57.120, 58.395]
+        cfg.MODEL.PIXEL_STD = [1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
         
        # Try to adjust the backbone model and adapt it for our needs
 
@@ -700,7 +684,7 @@ def setup_cfg(
 
     else:
         cfg.MODEL.PIXEL_MEAN = [103.530, 116.280, 123.675]
-        cfg.MODEL.PIXEL_STD = [57.375, 57.120, 58.395]
+        cfg.MODEL.PIXEL_STD = [1.0, 1.0, 51.0]
 
     cfg.SOLVER.IMS_PER_BATCH = ims_per_batch
     cfg.SOLVER.BASE_LR = base_lr
@@ -709,6 +693,34 @@ def setup_cfg(
     cfg.TEST.EVAL_PERIOD = eval_period
     cfg.RESIZE = resize
     cfg.INPUT.MIN_SIZE_TRAIN = 1000
+
+    try:
+        counter = 0
+        print("Allgemeine Infos zum CFG", cfg.dump())
+        counter = 1
+    except:
+        print("Occurred at position :", counter)
+    try:
+        print("Meine Trainingsdaten", trains)
+        counter = 2
+    except:
+        print("Occurred at position :", counter)
+    try:
+        print("Size meiner Trainingsdaten", trains.shape)
+        counter = 3
+    except:
+        print("Occurred at position :", counter)
+    try:
+        print("Semantic Segment File Name", trains.sem_seg_file_name)
+        counter = 4
+    except:
+        print("Occurred at position :", counter)
+    try:
+        print("Panoptic Segment File Name", trains.pan_seg_file_name)
+        counter = 5
+    except:
+        print("Occurred at position :", counter)
+
     return cfg
 
 
