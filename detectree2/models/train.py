@@ -633,6 +633,22 @@ def setup_cfg(
     cfg = get_cfg()
     cfg.merge_from_file(model_zoo.get_config_file(base_model))
     cfg.DATASETS.TRAIN = trains
+    try:
+        counter = 0
+        print("Allgemeine Infos zum CFG", cfg.dump())
+        counter = 1
+        print("Meine Trainingsdaten", trains)
+        counter = 2
+        print("Size meiner Trainingsdaten", trains.shape)
+        counter = 3
+        print("Semantic Segment File Name", trains.sem_seg_file_name)
+        counter = 4
+        print("Panoptic Segment File Name", trains.pan_seg_file_name)
+        counter = 5
+    except:
+        print("Occurred at position :", counter)
+
+
     cfg.DATASETS.TEST = tests
     cfg.DATALOADER.NUM_WORKERS = workers
     cfg.SOLVER.IMS_PER_BATCH = ims_per_batch
