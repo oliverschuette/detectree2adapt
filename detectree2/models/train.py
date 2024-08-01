@@ -14,6 +14,7 @@ from pathlib import Path
 from typing import Any, Dict, List
 
 import cv2
+import tifffile as tiff
 import detectron2.data.transforms as T  # noqa:N812
 import detectron2.utils.comm as comm
 import numpy as np
@@ -364,7 +365,8 @@ def build_train_loader(cls, cfg):
     elif cfg.RESIZE == "random":
         for i, datas in enumerate(DatasetCatalog.get(cfg.DATASETS.TRAIN[0])):
             location = datas['file_name']
-            size = cv2.imread(location).shape[0]
+            #size = cv2.imread(location).shape[0]
+            size = tiff.imread((location).shape[0])
             break
         print("ADD RANDOM RESIZE WITH SIZE = ", size)
         augmentations.append(T.ResizeScale(0.6, 1.4, size, size))
@@ -440,7 +442,8 @@ def get_tree_dicts(directory: str, classes: List[str] = None, classes_at: str = 
             print("Get_tree_dicts final filename Error")
 
         # Make sure we have the correct height and width
-        height, width = cv2.imread(filename).shape[:2]
+        height, width = tiff.imread(filename.shape[:2])
+        #cv2.imread(filename).shape[:2]
 
         record["file_name"] = filename
         record["height"] = height
@@ -784,7 +787,8 @@ def predictions_on_data(directory=None,
         num_to_pred = num_predictions
 
     for d in random.sample(dataset_dicts, num_to_pred):
-        img = cv2.imread(d["file_name"])
+        img = tiff.imread(d["file_name"])
+        #cv2.imread(d["file_name"])
         # cv2_imshow(img)
         outputs = predictor(img)
         v = Visualizer(
@@ -822,10 +826,12 @@ if __name__ == "__main__":
     trees_metadata = MetadataCatalog.get(name + "_train")
     # dataset_dicts = get_tree_dicts("./")
     for d in dataset_dicts:
-        img = cv2.imread(d["file_name"])
+        #img = cv2.imread(d["file_name"])
+        img = tiff.imread(d["file_name"])
+        d["file_name"]
         visualizer = Visualizer(img[:, :, ::-1], metadata=trees_metadata, scale=0.5)
         out = visualizer.draw_dataset_dict(d)
-        image = cv2.cvtColor(out.get_image()[:, :, ::-1], cv2.COLOR_BGR2RGB)
+        #image = cv2.cvtColor(out.get_image()[:, :, ::-1], cv2.COLOR_BGR2RGB)
         # display(Image.fromarray(image))
     # Set the base (pre-trained) model from the detectron2 model_zoo
     model = "COCO-InstanceSegmentation/mask_rcnn_R_101_FPN_3x.yaml"
