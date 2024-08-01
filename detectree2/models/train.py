@@ -366,7 +366,7 @@ def build_train_loader(cls, cfg):
         for i, datas in enumerate(DatasetCatalog.get(cfg.DATASETS.TRAIN[0])):
             location = datas['file_name']
             #size = cv2.imread(location).shape[0]
-            size = tiff.imread((location).shape[0])
+            size = tiff.imread(location).shape[0]
             break
         print("ADD RANDOM RESIZE WITH SIZE = ", size)
         augmentations.append(T.ResizeScale(0.6, 1.4, size, size))
@@ -442,7 +442,7 @@ def get_tree_dicts(directory: str, classes: List[str] = None, classes_at: str = 
             print("Get_tree_dicts final filename Error")
 
         # Make sure we have the correct height and width
-        height, width = tiff.imread(filename.shape[:2])
+        height, width = tiff.imread(filename).shape[:2]
         #cv2.imread(filename).shape[:2]
 
         record["file_name"] = filename
