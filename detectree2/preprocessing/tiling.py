@@ -447,14 +447,32 @@ def tile_data_train(  # noqa: C901
 
                 # The patches will be saved as tif files instead of png files
                 try:
+                    # (260, 260, 6)
                     print("Shape of our stack", dualstack_rescaled.shape)
                 except:
                     print("Shape of our stack not available")
                     
                 # .tif instead of .tiff test
-                tiff.imwrite(
-                    str(out_path_root.with_suffix(out_path_root.suffix + ".tif").resolve()),
-                    dualstack_rescaled)
+                #tiff.imwrite(
+                #    str(out_path_root.with_suffix(out_path_root.suffix + ".tif").resolve()),
+                #    dualstack_rescaled)
+                
+                out_meta.update({
+                    "driver": "GTiff",
+                    "height": dualstack_rescaled.shape[1],
+                    "width": dualstack_rescaled.shape[2],
+                    "transform": out_transform,
+                    "nodata": None,
+                })
+
+                # dtype needs to be unchanged for some data and set to uint8 for others
+                if dtype_bool:
+                    out_meta.update({"dtype": "uint8"})
+                
+                # Save the tif as tif without this .tiff bullshit / wrong shape format
+                out_tif = out_path_root.with_suffix(out_path_root.suffix + ".tif")
+                with rasterio.open(out_tif, "w", **out_meta) as dest:
+                    dest.write(dualstack_rescaled)
 
             # select the crowns that intersect the non-buffered central
             # section of the tile using the inner join
