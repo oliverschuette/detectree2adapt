@@ -58,7 +58,7 @@ parso @ file:///home/conda/feedstock_root/build_artifacts/parso_1638334955874/wo
 pathspec==0.9.0
 pexpect @ file:///home/conda/feedstock_root/build_artifacts/pexpect_1602535608087/work
 pickleshare @ file:///home/conda/feedstock_root/build_artifacts/pickleshare_1602536217715/work
-Pillow==9.0.1
+Pillow==10.4.0           #9.0.1
 portalocker==2.4.0
 prompt-toolkit @ file:///home/conda/feedstock_root/build_artifacts/prompt-toolkit_1644497866770/work
 protobuf==3.19.4
