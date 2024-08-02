@@ -3,6 +3,7 @@
 Classes and functions to train a model based on othomosaics and corresponding
 manual crown data.
 """
+import copy
 import datetime
 import glob
 import json
@@ -32,6 +33,7 @@ from detectron2.data import (
     build_detection_test_loader,
     build_detection_train_loader,
 )
+from detectron2.data import detection_utils as utils
 from detectron2.engine import DefaultTrainer
 from detectron2.engine.hooks import HookBase
 from detectron2.evaluation import COCOEvaluator, verify_results
@@ -255,92 +257,34 @@ class MyTrainer(DefaultTrainer):
             ),
         )
         return hooks
-    
-class MyMulticlassTrainer(DefaultTrainer):
-    """Summary.
 
-    Args:
-        DefaultTrainer (_type_): _description_
+# Create my own dataset mapper  
+def mapper(dataset_dict, is_train, augmentations):
 
-    Returns:
-        _type_: _description_
-    """
+    # it will be modified by code below
+    dataset_dict = copy.deepcopy(dataset_dict)
 
-    def __init__(self, cfg, patience):  # noqa: D107
-        self.patience = patience
-        # self.resize = resize
-        super().__init__(cfg)
+    # can use other ways to read image
+    image = utils.read_image(dataset_dict["file_name"], format="TIFF")
 
-    def train(self):
-        """Run training.
+    # Load the dats
+    auginput = T.AugInput(image)
 
-        Args:
-            start_iter, max_iter (int): See docs above
+    # Apply the augmentations
+    transform = augmentations(auginput)
 
-        Returns:
-            OrderedDict of results, if evaluation is enabled. Otherwise None.
-        """
+    image = torch.from_numpy(auginput.image.transpose(2, 0, 1))
 
-        start_iter = self.start_iter
-        max_iter = self.max_iter
-        logger = logging.getLogger(__name__)
-        logger.info("Starting training from iteration {}".format(start_iter))
-
-        self.iter = self.start_iter = start_iter
-        self.max_iter = max_iter
-        self.early_stop = False
-        self.APs = []
-
-        with EventStorage(start_iter) as self.storage:
-            try:
-                self.before_train()
-                for self.iter in range(start_iter, max_iter):
-                    self.before_step()
-                    self.run_step()
-                    self.after_step()
-                    if self.early_stop:
-                        break
-                # self.iter == max_iter can be used by `after_train` to
-                # tell whether the training successfully finished or failed
-                # due to exceptions.
-                self.iter += 1
-            except Exception:
-                logger.exception("Exception during training:")
-                raise
-            finally:
-                self.after_train()
-        if len(self.cfg.TEST.EXPECTED_RESULTS) and comm.is_main_process():
-            assert hasattr(self, "_last_eval_results"), "No evaluation results obtained during training!"
-            verify_results(self.cfg, self._last_eval_results)
-            return self._last_eval_results
-
-    @classmethod
-    def build_evaluator(cls, cfg, dataset_name, output_folder=None):
-        if output_folder is None:
-            os.makedirs("eval", exist_ok=True)
-            output_folder = "eval"
-        return COCOEvaluator(dataset_name, cfg, True, output_folder)
-
-    def build_hooks(self):
-        hooks = super().build_hooks()
-        # augmentations = [T.ResizeShortestEdge(short_edge_length=(1000, 1000),
-        #                                     max_size=1333,
-        #                                     sample_style='choice')]
-        hooks.insert(
-            -1,
-            LossEvalHook(
-                self.cfg.TEST.EVAL_PERIOD,
-                self.model,
-                build_detection_test_loader(
-                    self.cfg,
-                    self.cfg.DATASETS.TEST,
-                    DatasetMapper(self.cfg, True)
-                ),
-                self.patience,
-            ),
-        )
-        return hooks
-
+    # Apply the augmentations to the annotations
+    annos = [
+        utils.transform_instance_annotations(annotation, [transform], image.shape[1:])
+        for annotation in dataset_dict.pop("annotations")
+    ]
+    return {
+       # create the format that the model expects
+       "image": image,
+       "instances": utils.annotations_to_instances(annos, image.shape[1:])
+    }
 
 def build_train_loader(cls, cfg):
     """Summary.
@@ -375,12 +319,7 @@ def build_train_loader(cls, cfg):
         augmentations.append(T.ResizeScale(0.6, 1.4, size, size))
     return build_detection_train_loader(
         cfg,
-        mapper=DatasetMapper(
-            cfg,
-            is_train=True,
-            augmentations=augmentations,
-            image_format="TIFF",
-        ),
+        mapper=mapper(cfg, True, augmentations),
     )
 
 
