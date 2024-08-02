@@ -17,6 +17,7 @@ import cv2
 import detectron2.data.transforms as T  # noqa:N812
 import detectron2.utils.comm as comm
 import numpy as np
+import rasterio
 import tifffile as tiff
 import torch
 import torch.nn as nn
@@ -366,7 +367,9 @@ def build_train_loader(cls, cfg):
         for i, datas in enumerate(DatasetCatalog.get(cfg.DATASETS.TRAIN[0])):
             location = datas['file_name']
             #size = cv2.imread(location).shape[0]
-            size = tiff.imread(location).shape[0]
+            #size = tiff.imread(location).shape[0]
+            with rasterio.open(location) as src:
+                size = src.read().shape[0]
             break
         print("ADD RANDOM RESIZE WITH SIZE = ", size)
         augmentations.append(T.ResizeScale(0.6, 1.4, size, size))
@@ -442,7 +445,9 @@ def get_tree_dicts(directory: str, classes: List[str] = None, classes_at: str = 
             print("Get_tree_dicts final filename Error")
 
         # Make sure we have the correct height and width
-        height, width = tiff.imread(filename).shape[:2]
+        #height, width = tiff.imread(filename).shape[:2]
+        with rasterio.open(filename) as src:
+                height, width  = src.read().shape[:2]
         #cv2.imread(filename).shape[:2]
 
         record["file_name"] = filename
@@ -787,7 +792,9 @@ def predictions_on_data(directory=None,
         num_to_pred = num_predictions
 
     for d in random.sample(dataset_dicts, num_to_pred):
-        img = tiff.imread(d["file_name"])
+        #img = tiff.imread(d["file_name"])
+        with rasterio.open(d["file_name"]) as src:
+                img  = src.read()
         #cv2.imread(d["file_name"])
         # cv2_imshow(img)
         outputs = predictor(img)
@@ -827,8 +834,9 @@ if __name__ == "__main__":
     # dataset_dicts = get_tree_dicts("./")
     for d in dataset_dicts:
         #img = cv2.imread(d["file_name"])
-        img = tiff.imread(d["file_name"])
-        d["file_name"]
+        #img = tiff.imread(d["file_name"])
+        with rasterio.open(d["file_name"]) as src:
+            img = src.read()
         visualizer = Visualizer(img[:, :, ::-1], metadata=trees_metadata, scale=0.5)
         out = visualizer.draw_dataset_dict(d)
         #image = cv2.cvtColor(out.get_image()[:, :, ::-1], cv2.COLOR_BGR2RGB)
