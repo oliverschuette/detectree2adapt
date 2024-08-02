@@ -13,6 +13,8 @@ import time
 from pathlib import Path
 from typing import Any, Dict, List
 
+import detectron2.data.transforms as T
+from detectron2.data import DatasetMapper   # the default mapper
 import cv2
 import detectron2.data.transforms as T  # noqa:N812
 import detectron2.utils.comm as comm
@@ -379,6 +381,7 @@ def build_train_loader(cls, cfg):
             cfg,
             is_train=True,
             augmentations=augmentations,
+            image_format="TIFF",
         ),
     )
 
@@ -764,6 +767,8 @@ def setup_cfg(
         print("Occurred at position :", counter)
 
     return cfg
+
+
 
 
 def predictions_on_data(directory=None,
