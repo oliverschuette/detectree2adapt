@@ -265,7 +265,7 @@ def mapper(dataset_dict, is_train, augmentations):
     dataset_dict = copy.deepcopy(dataset_dict)
 
     # can use other ways to read image
-    image = utils.read_image(dataset_dict["file_name"], format="TIFF")
+    image = read_image(dataset_dict["file_name"], format="TIFF")
 
     # Load the dats
     auginput = T.AugInput(image)
@@ -285,6 +285,34 @@ def mapper(dataset_dict, is_train, augmentations):
        "image": image,
        "instances": utils.annotations_to_instances(annos, image.shape[1:])
     }
+
+# Overwrite Utils function for own import
+def read_image(file_name, format=None):
+    """
+    Read an image into the given format.
+    Will apply rotation and flipping if the image has such exif information.
+
+    Args:
+        file_name (str): image file path
+        format (str): one of the supported image modes in PIL, or "BGR" or "YUV-BT.601".
+
+    Returns:
+        image (np.ndarray):
+            an HWC image in the given format, which is 0-255, uint8 for
+            supported image modes in PIL or "BGR"; float (0-1 for Y) for YUV-BT.601.
+    """
+    with rasterio.open(file_name) as src:
+        image = src.read()
+
+        # work around this bug: https://github.com/python-pillow/Pillow/issues/3973
+        image = utils._apply_exif_orientation(image)
+
+        # Directly transform to numpy array (does this work?)
+        img_array = np.array(image)
+        
+        # Different possible solution from ChatGPT
+        #image = np.transpose(image, (1, 2, 0))
+        return img_array
 
 def build_train_loader(cls, cfg):
     """Summary.
