@@ -476,8 +476,8 @@ def get_filenames(directory: str):
     """
     dataset_dicts = []
 
-    # Changed .png to .tif here
-    files = glob.glob(directory + "*.tif")
+    # Changed .png to .tiff here
+    files = glob.glob(directory + "*.tiff")
     for filename in [file for file in files]:
         file = {}
         filename = os.path.join(directory, filename)

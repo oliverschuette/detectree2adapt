@@ -149,7 +149,7 @@ def tile_data(
             # If tile appears blank in folder can show the image here and may
             # need to fix RGB data or the dtype
             # show(out_img)
-            out_tif = out_path_root.with_suffix(out_path_root.suffix + ".tif")
+            out_tif = out_path_root.with_suffix(out_path_root.suffix + ".tiff")
             with rasterio.open(out_tif, "w", **out_meta) as dest:
                 dest.write(out_img)
 
@@ -242,7 +242,7 @@ def tile_data(
 
                 # Changed from .tiff to .tif
                 tiff.imwrite(
-                    str(out_path_root.with_suffix(out_path_root.suffix + ".tif").resolve()),
+                    str(out_path_root.with_suffix(out_path_root.suffix + ".tiff").resolve()),
                     dualstack_rescaled)
             
             if tile_count % 50 == 0:
@@ -360,7 +360,7 @@ def tile_data_train(  # noqa: C901
 
             # Saving the tile as a new tiff, named by the origin of the tile. If tile appears blank in folder can show
             # the image here and may need to fix RGB data or the dtype
-            out_tif = out_path_root.with_suffix(out_path_root.suffix + ".tif")
+            out_tif = out_path_root.with_suffix(out_path_root.suffix + ".tiff")
             with rasterio.open(out_tif, "w", **out_meta) as dest:
                 dest.write(out_img)
 
@@ -472,7 +472,7 @@ def tile_data_train(  # noqa: C901
                     out_meta.update({"dtype": "uint8"})
                 
                 # Save the tif as tif without this .tiff bullshit / wrong shape format
-                out_tif = out_path_root.with_suffix(out_path_root.suffix + ".tif")
+                out_tif = out_path_root.with_suffix(out_path_root.suffix + ".tiff")
                 with rasterio.open(out_tif, "w", **out_meta) as dest:
                     dest.write(dualstack_rescaled)
 
@@ -494,7 +494,7 @@ def tile_data_train(  # noqa: C901
 
             # Was a .png file before, is that correct that this info is just there to ignore the .pngs (seems like it, but we want to get the .tifs)
             # Just describes the image path, changed from .tiff to .tif
-            impath = {"imagePath": out_path_root.with_suffix(out_path_root.suffix + ".tif").as_posix()}
+            impath = {"imagePath": out_path_root.with_suffix(out_path_root.suffix + ".tiff").as_posix()}
 
             # Save as a geojson, a format compatible with detectron2, again named by the origin of the tile.
             # If the box selected from the image is outside of the mapped region due to the image being on a slant
@@ -645,7 +645,7 @@ def to_traintest_folders(  # noqa: C901
     Path(out_dir / "test").mkdir(parents=True, exist_ok=True)
 
     # Was a .png before (changed from .tiff to .tif)
-    file_names = tiles_dir.glob("*.tif")
+    file_names = tiles_dir.glob("*.tiff")
     file_roots = [item.stem for item in file_names]
 
     num = list(range(0, len(file_roots)))
