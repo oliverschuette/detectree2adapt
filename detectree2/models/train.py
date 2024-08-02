@@ -265,7 +265,7 @@ def mapper(dataset_dict, is_train, augmentations):
     dataset_dict = copy.deepcopy(dataset_dict)
 
     # can use other ways to read image
-    image = read_image(dataset_dict["file_name"], format="TIFF")
+    image = utils.read_image(dataset_dict["file_name"], format="TIFF")
 
     # Load the dats
     auginput = T.AugInput(image)
@@ -287,7 +287,7 @@ def mapper(dataset_dict, is_train, augmentations):
     }
 
 # Overwrite Utils function for own import
-def read_image(file_name, format=None):
+def read_image_new(file_name, format=None):
     """
     Read an image into the given format.
     Will apply rotation and flipping if the image has such exif information.
