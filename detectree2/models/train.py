@@ -13,8 +13,6 @@ import time
 from pathlib import Path
 from typing import Any, Dict, List
 
-import detectron2.data.transforms as T
-from detectron2.data import DatasetMapper   # the default mapper
 import cv2
 import detectron2.data.transforms as T  # noqa:N812
 import detectron2.utils.comm as comm
@@ -27,9 +25,9 @@ import torch.nn.init as init
 from detectron2 import model_zoo
 from detectron2.checkpoint import DetectionCheckpointer  # noqa:F401
 from detectron2.config import get_cfg
+from detectron2.data import DatasetMapper  # the default mapper
 from detectron2.data import (
     DatasetCatalog,
-    DatasetMapper,
     MetadataCatalog,
     build_detection_test_loader,
     build_detection_train_loader,
