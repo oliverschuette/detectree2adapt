@@ -118,7 +118,7 @@ class LossEvalHook(HookBase):
                 print("Print out the possible values:", self.trainer.test(self.trainer.cfg, self.trainer.model)[dataset])
                 APs.append(self.trainer.test(self.trainer.cfg, self.trainer.model)[dataset]["segm"]["AP50"])
             AP = sum(APs) / len(APs)
-        elif (self.trainer.test(self.trainer.cfg, self.trainer.model)["bbox"]["AP50"].isnan() is not True):
+        elif (np.isnan(self.trainer.test(self.trainer.cfg, self.trainer.model)["bbox"]["AP50"]) is not True):
             print("Print out the possible values:", self.trainer.test(self.trainer.cfg, self.trainer.model))
             AP = self.trainer.test(self.trainer.cfg, self.trainer.model)["segm"]["AP50"]
         else: 
