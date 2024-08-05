@@ -118,14 +118,13 @@ class LossEvalHook(HookBase):
                 print("Print out the possible values:", self.trainer.test(self.trainer.cfg, self.trainer.model)[dataset])
                 APs.append(self.trainer.test(self.trainer.cfg, self.trainer.model)[dataset]["segm"]["AP50"])
             AP = sum(APs) / len(APs)
-        elif (self.trainer.test(self.trainer.cfg, self.trainer.model)["bbox"]["AP50"] == 'nan'):
-            print("Print out the possible values:", self.trainer.test(self.trainer.cfg, self.trainer.model))
-            AP = self.trainer.test(self.trainer.cfg, self.trainer.model)["segm"]["AP50"]
-        else: 
-            print("Check if we are right: ", self.trainer.test(self.trainer.cfg, self.trainer.model)["bbox"]["AP50"] )
+        elif  np.isnan(self.trainer.test(self.trainer.cfg, self.trainer.model)["bbox"]["AP50"]):
             print("Check if we are right: ", np.isnan(self.trainer.test(self.trainer.cfg, self.trainer.model)["bbox"]["AP50"]) )
             print("No AP50 score available")
             AP = 0.0
+        else:
+            print("Print out the possible values:", self.trainer.test(self.trainer.cfg, self.trainer.model))
+            AP = self.trainer.test(self.trainer.cfg, self.trainer.model)["segm"]["AP50"]
         print("Av. AP50 =", AP)
         self.trainer.APs.append(AP)
         self.trainer.storage.put_scalar("validation_loss", mean_loss)
