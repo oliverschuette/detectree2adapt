@@ -354,7 +354,12 @@ def build_train_loader(cls, cfg):
         augmentations.append(T.ResizeScale(0.6, 1.4, size, size))
     return build_detection_train_loader(
         cfg,
-        mapper=mapper(cfg, True, augmentations),
+        mapper=DatasetMapper(
+            cfg,
+            is_train=True,
+            augmentations=augmentations,
+        ),
+        #mapper(cfg, True, augmentations),
     )
 
 
