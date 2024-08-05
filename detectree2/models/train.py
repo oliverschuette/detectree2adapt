@@ -110,7 +110,8 @@ class LossEvalHook(HookBase):
             loss_batch = self._get_loss(inputs)
             losses.append(loss_batch)
         mean_loss = np.mean(losses)
-        # print(self.trainer.cfg.DATASETS.TEST)
+        print("Are the test datasets empty?", self.trainer.cfg.DATASETS.TEST)
+
         # Combine the AP50s of the different datasets
         if len(self.trainer.cfg.DATASETS.TEST) > 1:
             APs = []
@@ -431,7 +432,8 @@ def get_tree_dicts(directory: str, classes: List[str] = None, classes_at: str = 
         # Make sure we have the correct height and width
         #height, width = tiff.imread(filename).shape[:2]
         with rasterio.open(filename) as src:
-                height, width  = src.read().shape[:2]
+                print("Shape", src.read().shape[:2])
+                height, width  = src.read().shape[1:3]
         #cv2.imread(filename).shape[:2]
 
         record["file_name"] = filename
