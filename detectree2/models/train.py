@@ -115,9 +115,11 @@ class LossEvalHook(HookBase):
         if len(self.trainer.cfg.DATASETS.TEST) > 1:
             APs = []
             for dataset in self.trainer.cfg.DATASETS.TEST:
+                print("Print out the possible values:", self.trainer.test(self.trainer.cfg, self.trainer.model)[dataset])
                 APs.append(self.trainer.test(self.trainer.cfg, self.trainer.model)[dataset]["segm"]["AP50"])
             AP = sum(APs) / len(APs)
         else:
+            print("Print out the possible values:", self.trainer.test(self.trainer.cfg, self.trainer.model)[dataset])
             AP = self.trainer.test(self.trainer.cfg, self.trainer.model)["segm"]["AP50"]
         print("Av. AP50 =", AP)
         self.trainer.APs.append(AP)
@@ -286,7 +288,7 @@ def mapper(dataset_dict, is_train, augmentations):
        "instances": utils.annotations_to_instances(annos, image.shape[1:])
     }
 
-# Overwrite Utils function for own import
+# Overwrite Utils function for own import (most probly not needed anymore)
 def read_image_new(file_name, format=None):
     """
     Read an image into the given format.
