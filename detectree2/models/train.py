@@ -358,6 +358,7 @@ def build_train_loader(cls, cfg):
             cfg,
             is_train=True,
             augmentations=augmentations,
+            image_format = "TIFF",
         ),
         #mapper(cfg, True, augmentations),
     )
