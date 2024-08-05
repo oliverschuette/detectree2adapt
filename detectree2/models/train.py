@@ -119,7 +119,7 @@ class LossEvalHook(HookBase):
                 APs.append(self.trainer.test(self.trainer.cfg, self.trainer.model)[dataset]["segm"]["AP50"])
             AP = sum(APs) / len(APs)
         else:
-            print("Print out the possible values:", self.trainer.test(self.trainer.cfg, self.trainer.model)[dataset])
+            print("Print out the possible values:", self.trainer.test(self.trainer.cfg, self.trainer.model))
             AP = self.trainer.test(self.trainer.cfg, self.trainer.model)["segm"]["AP50"]
         print("Av. AP50 =", AP)
         self.trainer.APs.append(AP)
