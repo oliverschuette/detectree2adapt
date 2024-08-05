@@ -383,6 +383,7 @@ def get_tree_dicts(directory: str, classes: List[str] = None, classes_at: str = 
 
     for filename in [file for file in os.listdir(directory) if file.endswith(".geojson")]:
         json_file = os.path.join(directory, filename)
+        """
         try:
             # Json
             print("Get_tree_dicts filename", filename)
@@ -393,25 +394,28 @@ def get_tree_dicts(directory: str, classes: List[str] = None, classes_at: str = 
             print("Get_tree_dicts json_file Names", json_file)
         except:
             print("Get_tree_dicts json_file Names Error")
+        """
         with open(json_file) as f:
             img_anns = json.load(f)
+            """
             try:
                 # tiff
                 print("Get_tree_dicts img_anns Names", img_anns)
             except:
                 print("Get_tree_dicts img_anns Names Error")
+            """
         # Turn off type checking for annotations until we have a better solution
         record: Dict[str, Any] = {}
 
         # filename = os.path.join(directory, img_anns["imagePath"])
         filename = img_anns["imagePath"]
-        
+        """
         try:
             # tiff
             print("Get_tree_dicts final filename", filename)
         except:
             print("Get_tree_dicts final filename Error")
-
+        """
         # Make sure we have the correct height and width
         #height, width = tiff.imread(filename).shape[:2]
         with rasterio.open(filename) as src:
@@ -480,10 +484,12 @@ def combine_dicts(root_dir: str,
         del train_dirs[(val_dir - 1)]
         tree_dicts = []
         for d in train_dirs:
+            """
             try:
                 print("Combine_dicts Repo", d)
             except:
                 print("Combine_dicts Repo error")
+            """
             tree_dicts += get_tree_dicts(d, classes=classes, classes_at=classes_at)
     elif mode == "val":
         tree_dicts = get_tree_dicts(train_dirs[(val_dir - 1)], classes=classes, classes_at=classes_at)
@@ -632,14 +638,14 @@ def setup_cfg(
         out_dir: directory to save outputs
     """
     cfg = get_cfg()
-
+    """
     try:
         counter = 0
         print("Allgemeine Infos zum CFG Part 1", cfg.dump())
         counter = 1
     except:
         print("Occurred at position :", counter)
-
+    """
 
 
     cfg.merge_from_file(model_zoo.get_config_file(base_model))
@@ -705,6 +711,7 @@ def setup_cfg(
     cfg.RESIZE = resize
     cfg.INPUT.MIN_SIZE_TRAIN = 1000
 
+    """
     try:
         counter = 0
         print("Allgemeine Infos zum CFG", cfg.dump())
@@ -730,8 +737,9 @@ def setup_cfg(
         print("Panoptic Segment File Name", trains.pan_seg_file_name)
     except:
         print("Occurred at position :", counter)
-
+    """
     return cfg
+
 
 
 
