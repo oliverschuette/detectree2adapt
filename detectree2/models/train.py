@@ -125,6 +125,7 @@ class LossEvalHook(HookBase):
             AP = self.trainer.test(self.trainer.cfg, self.trainer.model)["segm"]["AP50"]
         else: 
             print("No AP50 score available")
+            AP = 0.0
         print("Av. AP50 =", AP)
         self.trainer.APs.append(AP)
         self.trainer.storage.put_scalar("validation_loss", mean_loss)
