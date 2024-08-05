@@ -258,7 +258,7 @@ class MyTrainer(DefaultTrainer):
                 build_detection_test_loader(
                     self.cfg,
                     self.cfg.DATASETS.TEST,
-                    DatasetMapper(self.cfg, True)
+                    DatasetMapper(self.cfg, True,  image_format = "TIFF")
                 ),
                 self.patience,
             ),
