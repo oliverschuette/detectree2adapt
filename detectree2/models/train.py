@@ -116,18 +116,21 @@ class LossEvalHook(HookBase):
         if len(self.trainer.cfg.DATASETS.TEST) > 1:
             APs = []
             for dataset in self.trainer.cfg.DATASETS.TEST:
-                print("Print out the possible values:", self.trainer.test(self.trainer.cfg, self.trainer.model)[dataset])
+                print("Print out the possible dataset values:", self.trainer.test(self.trainer.cfg, self.trainer.model)[dataset])
+                print("Print out the possible values without dataset:", self.trainer.test(self.trainer.cfg, self.trainer.model))
                 print("Print out each dataset: ", dataset)
                 print("Print out each self trainer test: ", self.trainer.test(self.trainer.cfg, self.trainer.model))
                 print("Print out each self trainer cfg and model: ", self.trainer.cfg, self.trainer.model)
                 APs.append(self.trainer.test(self.trainer.cfg, self.trainer.model)[dataset]["segm"]["AP50"])
             AP = sum(APs) / len(APs)
-        elif  np.isnan(self.trainer.test(self.trainer.cfg, self.trainer.model)["segm"]["AP50"]):
-            print("Check if we are right: ", np.isnan(self.trainer.test(self.trainer.cfg, self.trainer.model)["segm"]["AP50"]) )
+        
+        # We have to look at the bbox, whether this is 0 or NaN
+        elif  np.isnan(self.trainer.test(self.trainer.cfg, self.trainer.model)["bbox"]["AP50"]):
+            print("Check if we are right: ", np.isnan(self.trainer.test(self.trainer.cfg, self.trainer.model)["bbox"]["AP50"]) )
             print("No AP50 score available")
             AP = 0.0
         else:
-            print("Print out the possible values:", self.trainer.test(self.trainer.cfg, self.trainer.model))
+            print("Print out the possible values in the third condition:", self.trainer.test(self.trainer.cfg, self.trainer.model))
             AP = self.trainer.test(self.trainer.cfg, self.trainer.model)["segm"]["AP50"]
         print("Av. AP50 =", AP)
         self.trainer.APs.append(AP)
