@@ -439,7 +439,7 @@ def get_tree_dicts(directory: str, classes: List[str] = None, classes_at: str = 
         # Make sure we have the correct height and width
         #height, width = tiff.imread(filename).shape[:2]
         with rasterio.open(filename) as src:
-                print("Shape of the annotation", src.read().shape)
+                #print("Shape of the annotation", src.read().shape)
                 height, width  = src.read().shape[1:3]
         #cv2.imread(filename).shape[:2]
 
