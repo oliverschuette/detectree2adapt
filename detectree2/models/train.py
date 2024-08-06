@@ -124,7 +124,7 @@ class LossEvalHook(HookBase):
                 APs.append(self.trainer.test(self.trainer.cfg, self.trainer.model)[dataset]["segm"]["AP50"])
             AP = sum(APs) / len(APs)
         
-        # We have to look at the bbox, whether when the bbox is nan we dont have a segment at all
+        # When we only have one dataset, we have to look at the bbox, whether when the bbox is nan we dont have a segment at all
         elif  np.isnan(self.trainer.test(self.trainer.cfg, self.trainer.model)["bbox"]["AP50"]):
             print("Print out the possible values without dataset (second condition):", self.trainer.test(self.trainer.cfg, self.trainer.model))
             print("Check if we are right: ", np.isnan(self.trainer.test(self.trainer.cfg, self.trainer.model)["bbox"]["AP50"]) )
@@ -440,7 +440,7 @@ def get_tree_dicts(directory: str, classes: List[str] = None, classes_at: str = 
         #height, width = tiff.imread(filename).shape[:2]
         with rasterio.open(filename) as src:
                 print("Shape of the annotation", src.read().shape)
-                height, width  = src.read().shape[:2]
+                height, width  = src.read().shape[1:3]
         #cv2.imread(filename).shape[:2]
 
         record["file_name"] = filename
@@ -705,6 +705,7 @@ def setup_cfg(
         # Reinitialize the weights or use your custom initialization method
         #torch.nn.init.kaiming_normal_(backbone.stem.conv1.weight, mode='fan_out', nonlinearity='relu')
 
+        """
         # This actually works!
         conv1 = backbone.bottom_up.stem.conv1
         conv1 = nn.Conv2d(6, 64, kernel_size=7, stride=2, padding=3, bias=False)
@@ -713,6 +714,7 @@ def setup_cfg(
 
         print("This is my first backbone", backbone)
 
+        """
         #backbone = build_backbone(cfg, 6)
 
         #print("This is my second backbone", backbone)
