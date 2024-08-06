@@ -124,11 +124,10 @@ class LossEvalHook(HookBase):
                 APs.append(self.trainer.test(self.trainer.cfg, self.trainer.model)[dataset]["segm"]["AP50"])
             AP = sum(APs) / len(APs)
         
-        # We have to look at the bbox, whether this is 0 or NaN
+        # We have to look at the bbox, whether when the bbox is nan we dont have a segment at all
         elif  np.isnan(self.trainer.test(self.trainer.cfg, self.trainer.model)["bbox"]["AP50"]):
             print("Print out the possible values without dataset (second condition):", self.trainer.test(self.trainer.cfg, self.trainer.model))
             print("Check if we are right: ", np.isnan(self.trainer.test(self.trainer.cfg, self.trainer.model)["bbox"]["AP50"]) )
-            print("And what about the segments: ", np.isnan(self.trainer.test(self.trainer.cfg, self.trainer.model)["segm"]["AP50"]) )
             print("No AP50 score available")
             AP = 0.0
         else:
