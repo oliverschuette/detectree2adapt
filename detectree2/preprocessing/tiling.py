@@ -16,7 +16,6 @@ import cv2
 import geopandas as gpd
 import numpy as np
 import rasterio
-import tifffile as tiff
 from fiona.crs import from_epsg  # noqa: F401
 from rasterio.crs import CRS
 from rasterio.io import DatasetReader
@@ -149,7 +148,7 @@ def tile_data(
             # If tile appears blank in folder can show the image here and may
             # need to fix RGB data or the dtype
             # show(out_img)
-            out_tif = out_path_root.with_suffix(out_path_root.suffix + ".tiff")
+            out_tif = out_path_root.with_suffix(out_path_root.suffix + ".tif")
             with rasterio.open(out_tif, "w", **out_meta) as dest:
                 dest.write(out_img)
 
@@ -176,16 +175,11 @@ def tile_data(
                     rgb_rescaled = 255 * rgb / 65535
                 else:
                     rgb_rescaled = rgb  # scale to image
-                # print("rgb rescaled", rgb_rescaled)
 
                 # save this as jpg or png...we are going for png...again, named with the origin of the specific tile
                 # here as a naughty method
-                #cv2.imwrite(str(out_path_root.with_suffix(out_path_root.suffix + ".png").resolve()),rgb_rescaled,)
+                cv2.imwrite(str(out_path_root.with_suffix(out_path_root.suffix + ".png").resolve()),rgb_rescaled,)
                     
-                # To make things more simple, we are using .tiffs here again
-                tiff.imwrite(
-                    str(out_path_root.with_suffix(out_path_root.suffix + ".tiff").resolve()),
-                    rgb_rescaled)
 
             # Case 2, we only have the RGBI-Orthophoto
             elif multitemp == 2:
@@ -202,48 +196,30 @@ def tile_data(
                     rgb_rescaled = 255 * rgb / 65535
                 else:
                     rgb_rescaled = rgb  # scale to image
-                # print("rgb rescaled", rgb_rescaled)
 
                 # save this as jpg or png...we are going for png...again, named with the origin of the specific tile
                 # here as a naughty method
-                #cv2.imwrite(str(out_path_root.with_suffix(out_path_root.suffix + ".png").resolve()), rgb_rescaled,)
+                cv2.imwrite(str(out_path_root.with_suffix(out_path_root.suffix + ".png").resolve()), rgb_rescaled,)
 
-                # To make things more simple, we are using .tiffs here again
-                tiff.imwrite(
-                    str(out_path_root.with_suffix(out_path_root.suffix + ".tiff").resolve()),
-                    rgb_rescaled)
-
-            # Case 3, we have both imagery types together
+            # Case 3, we have out multitemporal imagery that was transformed via PCA
             elif multitemp == 3:
-                nir1 = arr[0]
-                r1 = arr[1]
-                g1 = arr[2]
-                r2 = arr[3]
-                g2 = arr[4]
-                b2 = arr[5]
-                nir2 = arr[6]
+                nir = arr[0]
+                r = arr[1]
+                g = arr[2]
 
                 # stack up the bands in an order appropriate for saving with cv2,
                 # then rescale to the correct 0-255 range for cv2
 
-                dualstack = np.dstack((nir1, r1, g1, nir2, r2, g2))  # BGR for cv2
+                dualstack = np.dstack(nir, r, g)  # BGR for cv2
 
-                if np.max(g1) > 255 or np.max(g2) > 255:
+                if np.max(g) > 255 or np.max(g) > 255:
                     dualstack_rescaled = 255 * dualstack / 65535
                 else:
                     dualstack_rescaled = dualstack  # scale to image
-                # print("Dieser Code wird tatsächlich ausgeführt")
 
                 # save this as jpg or png...we are going for png...again, named with the origin of the specific tile
                 # here as a naughty method
-                
-                # The patches will be saved as tif files instead of png files
-                print("Shape of our stack", dualstack_rescaled.shape)
-
-                # Changed from .tiff to .tif
-                tiff.imwrite(
-                    str(out_path_root.with_suffix(out_path_root.suffix + ".tiff").resolve()),
-                    dualstack_rescaled)
+                cv2.imwrite(str(out_path_root.with_suffix(out_path_root.suffix + ".png").resolve()), dualstack_rescaled,)
             
             if tile_count % 50 == 0:
                 print(f"Processed {tile_count} tiles of {total_tiles} tiles")
@@ -360,7 +336,7 @@ def tile_data_train(  # noqa: C901
 
             # Saving the tile as a new tiff, named by the origin of the tile. If tile appears blank in folder can show
             # the image here and may need to fix RGB data or the dtype
-            out_tif = out_path_root.with_suffix(out_path_root.suffix + ".tiff")
+            out_tif = out_path_root.with_suffix(out_path_root.suffix + ".tif")
             with rasterio.open(out_tif, "w", **out_meta) as dest:
                 dest.write(out_img)
 
@@ -387,16 +363,10 @@ def tile_data_train(  # noqa: C901
                     rgb_rescaled = 255 * rgb / 65535
                 else:
                     rgb_rescaled = rgb  # scale to image
-                # print("rgb rescaled", rgb_rescaled)
 
                 # save this as jpg or png...we are going for png...again, named with the origin of the specific tile
                 # here as a naughty method
-                #cv2.imwrite(str(out_path_root.with_suffix(out_path_root.suffix + ".png").resolve()), rgb_rescaled,)
-
-                # To make things more simple, we are using .tiffs here again
-                tiff.imwrite(
-                    str(out_path_root.with_suffix(out_path_root.suffix + ".tiff").resolve()),
-                    rgb_rescaled)
+                cv2.imwrite(str(out_path_root.with_suffix(out_path_root.suffix + ".png").resolve()), rgb_rescaled,)
 
             # Case 2, we only have the RGBI-Orthophoto
             elif multitemp == 2:
@@ -413,68 +383,32 @@ def tile_data_train(  # noqa: C901
                     rgb_rescaled = 255 * rgb / 65535
                 else:
                     rgb_rescaled = rgb  # scale to image
-                # print("rgb rescaled", rgb_rescaled)
 
                 # save this as jpg or png...we are going for png...again, named with the origin of the specific tile
                 # here as a naughty method
-                #cv2.imwrite(str(out_path_root.with_suffix(out_path_root.suffix + ".png").resolve()), rgb_rescaled,)
+                cv2.imwrite(str(out_path_root.with_suffix(out_path_root.suffix + ".png").resolve()), rgb_rescaled,)
 
-                # To make things more simple, we are using .tiffs here again
-                tiff.imwrite(
-                    str(out_path_root.with_suffix(out_path_root.suffix + ".tiff").resolve()),
-                    rgb_rescaled)
-
-            # Case 3, we have both imagery types together
+            # Case 3, we have out multitemporal imagery that was transformed via PCA
             elif multitemp == 3:
-                nir1 = arr[0]
-                r1 = arr[1]
-                g1 = arr[2]
-                r2 = arr[3]
-                g2 = arr[4]
-                b2 = arr[5]
-                nir2 = arr[6]
+                nir = arr[0]
+                r = arr[1]
+                g = arr[2]
 
                 # stack up the bands in an order appropriate for saving with cv2,
                 # then rescale to the correct 0-255 range for cv2
 
-                dualstack = np.stack((nir1, r1, g1, nir2, r2, g2), axis = 0)  # BGR for cv2
+                dualstack = np.stack(nir, r, g)  # BGR for cv2
 
-                if np.max(g1) > 255 or np.max(g2) > 255:
+                if np.max(g) > 255:
                     dualstack_rescaled = 255 * dualstack / 65535
                 else:
                     dualstack_rescaled = dualstack  # scale to image
-                # print("Dieser Code wird tatsächlich ausgeführt")
-
-                # The patches will be saved as tif files instead of png files
-                try:
-                    # (260, 260, 6) if dstack
-                    print("Shape of our stack", dualstack_rescaled.shape)
-                except:
-                    print("Shape of our stack not available")
-                    
-                # .tif instead of .tiff test
-                #tiff.imwrite(
-                #    str(out_path_root.with_suffix(out_path_root.suffix + ".tif").resolve()),
-                #    dualstack_rescaled)
-                
-                out_meta.update({
-                    "driver": "GTiff",
-                    "height": 260,
-                    "width": 260,
-                    "transform": out_transform,
-                    "count": 6,
-                    "nodata": None,
-                })
-                print("Out Meta", out_meta)
-
-                # dtype needs to be unchanged for some data and set to uint8 for others
-                if dtype_bool:
-                    out_meta.update({"dtype": "uint8"})
-                
-                # Save the tif as tif without this .tiff bullshit / wrong shape format
-                out_tif = out_path_root.with_suffix(out_path_root.suffix + ".tiff")
-                with rasterio.open(out_tif, "w", **out_meta) as dest:
-                    dest.write(dualstack_rescaled)
+ 
+                # Write as png
+                cv2.imwrite(
+                    str(out_path_root.with_suffix(out_path_root.suffix + ".png").resolve()),
+                    rgb_rescaled,
+                )
 
             # select the crowns that intersect the non-buffered central
             # section of the tile using the inner join
@@ -494,7 +428,7 @@ def tile_data_train(  # noqa: C901
 
             # Was a .png file before, is that correct that this info is just there to ignore the .pngs (seems like it, but we want to get the .tifs)
             # Just describes the image path, changed from .tiff to .tif
-            impath = {"imagePath": out_path_root.with_suffix(out_path_root.suffix + ".tiff").as_posix()}
+            impath = {"imagePath": out_path_root.with_suffix(out_path_root.suffix + ".png").as_posix()}
 
             # Save as a geojson, a format compatible with detectron2, again named by the origin of the tile.
             # If the box selected from the image is outside of the mapped region due to the image being on a slant
@@ -645,7 +579,7 @@ def to_traintest_folders(  # noqa: C901
     Path(out_dir / "test").mkdir(parents=True, exist_ok=True)
 
     # Was a .png before (changed from .tiff to .tif)
-    file_names = tiles_dir.glob("*.tiff")
+    file_names = tiles_dir.glob("*.png")
     file_roots = [item.stem for item in file_names]
 
     num = list(range(0, len(file_roots)))

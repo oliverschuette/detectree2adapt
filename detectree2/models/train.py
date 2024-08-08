@@ -3,7 +3,6 @@
 Classes and functions to train a model based on othomosaics and corresponding
 manual crown data.
 """
-import copy
 import datetime
 import glob
 import json
@@ -18,27 +17,21 @@ import cv2
 import detectron2.data.transforms as T  # noqa:N812
 import detectron2.utils.comm as comm
 import numpy as np
-import rasterio
-import tifffile as tiff
 import torch
-import torch.nn as nn
-import torch.nn.init as init
 from detectron2 import model_zoo
 from detectron2.checkpoint import DetectionCheckpointer  # noqa:F401
 from detectron2.config import get_cfg
-from detectron2.data import DatasetMapper  # the default mapper
 from detectron2.data import (
     DatasetCatalog,
+    DatasetMapper,
     MetadataCatalog,
     build_detection_test_loader,
     build_detection_train_loader,
 )
-from detectron2.data import detection_utils as utils
 from detectron2.engine import DefaultTrainer
 from detectron2.engine.hooks import HookBase
 from detectron2.evaluation import COCOEvaluator, verify_results
 from detectron2.evaluation.coco_evaluation import instances_to_coco_json
-from detectron2.modeling.backbone import ResNet, build_backbone
 from detectron2.structures import BoxMode
 from detectron2.utils.events import get_event_storage  # noqa:F401
 from detectron2.utils.events import EventStorage
@@ -110,28 +103,14 @@ class LossEvalHook(HookBase):
             loss_batch = self._get_loss(inputs)
             losses.append(loss_batch)
         mean_loss = np.mean(losses)
-        print("Are the test datasets empty?", self.trainer.cfg.DATASETS.TEST, len(self.trainer.cfg.DATASETS.TEST))
-
+       
         # Combine the AP50s of the different datasets
         if len(self.trainer.cfg.DATASETS.TEST) > 1:
             APs = []
             for dataset in self.trainer.cfg.DATASETS.TEST:
-                print("Print out the possible dataset values:", self.trainer.test(self.trainer.cfg, self.trainer.model)[dataset])
-                print("Print out the possible values without dataset:", self.trainer.test(self.trainer.cfg, self.trainer.model))
-                print("Print out each dataset: ", dataset)
-                print("Print out each self trainer test: ", self.trainer.test(self.trainer.cfg, self.trainer.model))
-                print("Print out each self trainer cfg and model: ", self.trainer.cfg, self.trainer.model)
                 APs.append(self.trainer.test(self.trainer.cfg, self.trainer.model)[dataset]["segm"]["AP50"])
             AP = sum(APs) / len(APs)
-        
-        # When we only have one dataset, we have to look at the bbox, whether when the bbox is nan we dont have a segment at all
-        elif  np.isnan(self.trainer.test(self.trainer.cfg, self.trainer.model)["bbox"]["AP50"]):
-            print("Print out the possible values without dataset (second condition):", self.trainer.test(self.trainer.cfg, self.trainer.model))
-            print("Check if we are right: ", np.isnan(self.trainer.test(self.trainer.cfg, self.trainer.model)["bbox"]["AP50"]) )
-            print("No AP50 score available")
-            AP = 0.0
         else:
-            print("Print out the possible values in the third condition:", self.trainer.test(self.trainer.cfg, self.trainer.model))
             AP = self.trainer.test(self.trainer.cfg, self.trainer.model)["segm"]["AP50"]
         print("Av. AP50 =", AP)
         self.trainer.APs.append(AP)
@@ -265,68 +244,13 @@ class MyTrainer(DefaultTrainer):
                 build_detection_test_loader(
                     self.cfg,
                     self.cfg.DATASETS.TEST,
-                    DatasetMapper(self.cfg, True,  image_format = "TIFF")
+                    DatasetMapper(self.cfg, True)
                 ),
                 self.patience,
             ),
         )
         return hooks
 
-# Create my own dataset mapper  
-def mapper(dataset_dict, is_train, augmentations):
-
-    # it will be modified by code below
-    dataset_dict = copy.deepcopy(dataset_dict)
-
-    # can use other ways to read image
-    image = utils.read_image(dataset_dict["file_name"], format="TIFF")
-
-    # Load the dats
-    auginput = T.AugInput(image)
-
-    # Apply the augmentations
-    transform = augmentations(auginput)
-
-    image = torch.from_numpy(auginput.image.transpose(2, 0, 1))
-
-    # Apply the augmentations to the annotations
-    annos = [
-        utils.transform_instance_annotations(annotation, [transform], image.shape[1:])
-        for annotation in dataset_dict.pop("annotations")
-    ]
-    return {
-       # create the format that the model expects
-       "image": image,
-       "instances": utils.annotations_to_instances(annos, image.shape[1:])
-    }
-
-# Overwrite Utils function for own import (most probly not needed anymore)
-def read_image_new(file_name, format=None):
-    """
-    Read an image into the given format.
-    Will apply rotation and flipping if the image has such exif information.
-
-    Args:
-        file_name (str): image file path
-        format (str): one of the supported image modes in PIL, or "BGR" or "YUV-BT.601".
-
-    Returns:
-        image (np.ndarray):
-            an HWC image in the given format, which is 0-255, uint8 for
-            supported image modes in PIL or "BGR"; float (0-1 for Y) for YUV-BT.601.
-    """
-    with rasterio.open(file_name) as src:
-        image = src.read()
-
-        # work around this bug: https://github.com/python-pillow/Pillow/issues/3973
-        image = utils._apply_exif_orientation(image)
-
-        # Directly transform to numpy array (does this work?)
-        img_array = np.array(image)
-        
-        # Different possible solution from ChatGPT
-        #image = np.transpose(image, (1, 2, 0))
-        return img_array
 
 def build_train_loader(cls, cfg):
     """Summary.
@@ -352,10 +276,7 @@ def build_train_loader(cls, cfg):
     elif cfg.RESIZE == "random":
         for i, datas in enumerate(DatasetCatalog.get(cfg.DATASETS.TRAIN[0])):
             location = datas['file_name']
-            #size = cv2.imread(location).shape[0]
-            #size = tiff.imread(location).shape[0]
-            with rasterio.open(location) as src:
-                size = src.read().shape[0]
+            size = cv2.imread(location).shape[0]
             break
         print("ADD RANDOM RESIZE WITH SIZE = ", size)
         augmentations.append(T.ResizeScale(0.6, 1.4, size, size))
@@ -365,9 +286,7 @@ def build_train_loader(cls, cfg):
             cfg,
             is_train=True,
             augmentations=augmentations,
-            image_format = "TIFF",
         ),
-        #mapper(cfg, True, augmentations),
     )
 
 
@@ -403,45 +322,16 @@ def get_tree_dicts(directory: str, classes: List[str] = None, classes_at: str = 
 
     for filename in [file for file in os.listdir(directory) if file.endswith(".geojson")]:
         json_file = os.path.join(directory, filename)
-        """
-        try:
-            # Json
-            print("Get_tree_dicts filename", filename)
-        except:
-            print("Get_tree_dicts filename Error")
-        try:
-            # Json
-            print("Get_tree_dicts json_file Names", json_file)
-        except:
-            print("Get_tree_dicts json_file Names Error")
-        """
         with open(json_file) as f:
             img_anns = json.load(f)
-            """
-            try:
-                # tiff
-                print("Get_tree_dicts img_anns Names", img_anns)
-            except:
-                print("Get_tree_dicts img_anns Names Error")
-            """
         # Turn off type checking for annotations until we have a better solution
         record: Dict[str, Any] = {}
 
         # filename = os.path.join(directory, img_anns["imagePath"])
         filename = img_anns["imagePath"]
-        """
-        try:
-            # tiff
-            print("Get_tree_dicts final filename", filename)
-        except:
-            print("Get_tree_dicts final filename Error")
-        """
+
         # Make sure we have the correct height and width
-        #height, width = tiff.imread(filename).shape[:2]
-        with rasterio.open(filename) as src:
-                #print("Shape of the annotation", src.read().shape)
-                height, width  = src.read().shape[1:3]
-        #cv2.imread(filename).shape[:2]
+        height, width = cv2.imread(filename).shape[:2]
 
         record["file_name"] = filename
         record["height"] = height
@@ -505,12 +395,6 @@ def combine_dicts(root_dir: str,
         del train_dirs[(val_dir - 1)]
         tree_dicts = []
         for d in train_dirs:
-            """
-            try:
-                print("Combine_dicts Repo", d)
-            except:
-                print("Combine_dicts Repo error")
-            """
             tree_dicts += get_tree_dicts(d, classes=classes, classes_at=classes_at)
     elif mode == "val":
         tree_dicts = get_tree_dicts(train_dirs[(val_dir - 1)], classes=classes, classes_at=classes_at)
@@ -530,9 +414,7 @@ def get_filenames(directory: str):
         directory (str): directory of images to be predicted on
     """
     dataset_dicts = []
-
-    # Changed .png to .tiff here
-    files = glob.glob(directory + "*.tiff")
+    files = glob.glob(directory + "*.png")
     for filename in [file for file in files]:
         file = {}
         filename = os.path.join(directory, filename)
@@ -634,8 +516,7 @@ def setup_cfg(
     num_classes=1,
     eval_period=100,
     out_dir="./train_outputs",
-    resize=True,
-    multitemp=False
+    resize=True
 ):
     """Set up config object # noqa: D417.
 
@@ -659,16 +540,6 @@ def setup_cfg(
         out_dir: directory to save outputs
     """
     cfg = get_cfg()
-    """
-    try:
-        counter = 0
-        print("Allgemeine Infos zum CFG Part 1", cfg.dump())
-        counter = 1
-    except:
-        print("Occurred at position :", counter)
-    """
-
-
     cfg.merge_from_file(model_zoo.get_config_file(base_model))
     cfg.DATASETS.TRAIN = trains
     cfg.DATASETS.TEST = tests
@@ -688,44 +559,10 @@ def setup_cfg(
     else:
         cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(base_model)
 
-    # Just copy the ImageNet-Values two times for consistency (despite the wrong order)
-    if multitemp is True:
-        cfg.MODEL.PIXEL_MEAN = [103.530, 116.280, 123.675, 103.530, 116.280, 123.675]
-        cfg.MODEL.PIXEL_STD = [1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
-        
-       # Try to adjust the backbone model and adapt it for our needs
 
-        # Ensure the input channels match your data
-        backbone = build_backbone(cfg)
-        #backbone[0].conv1 = torch.nn.Conv2d(6, 64, kernel_size=7, stride=2, padding=3, bias=False)
-
-        # Modify the first convolutional layer to accept 7 input channels
-        #backbone.stem.conv1 = torch.nn.Conv2d(6, 64, kernel_size=7, stride=2, padding=3, bias=False)
-            
-        # Reinitialize the weights or use your custom initialization method
-        #torch.nn.init.kaiming_normal_(backbone.stem.conv1.weight, mode='fan_out', nonlinearity='relu')
-
-        """
-        # This actually works!
-        conv1 = backbone.bottom_up.stem.conv1
-        conv1 = nn.Conv2d(6, 64, kernel_size=7, stride=2, padding=3, bias=False)
-        init.kaiming_normal_(conv1.weight, mode='fan_out', nonlinearity='relu')
-        backbone.bottom_up.stem.conv1 = conv1
-
-        print("This is my first backbone", backbone)
-
-        """
-        #backbone = build_backbone(cfg, 6)
-
-        #print("This is my second backbone", backbone)
-
-        # Return the changed backbone (this does not work)
-        #cfg.MODEL.BACKBONE = backbone
-
-    else:
-        cfg.MODEL.PIXEL_MEAN = [103.530, 116.280, 123.675]
-        cfg.MODEL.PIXEL_STD = [1.0, 1.0, 51.0]
-
+    # Use other weights because of NIR-R-G instead of RGB
+    cfg.MODEL.PIXEL_MEAN = [123.675, 123.675, 116.280,]
+    cfg.MODEL.PIXEL_STD = [1.0, 1.0, 1.0]
     cfg.SOLVER.IMS_PER_BATCH = ims_per_batch
     cfg.SOLVER.BASE_LR = base_lr
     cfg.SOLVER.MAX_ITER = max_iter
@@ -733,38 +570,7 @@ def setup_cfg(
     cfg.TEST.EVAL_PERIOD = eval_period
     cfg.RESIZE = resize
     cfg.INPUT.MIN_SIZE_TRAIN = 1000
-
-    """
-    try:
-        counter = 0
-        print("Allgemeine Infos zum CFG", cfg.dump())
-    except:
-        print("Occurred at position :", counter)
-    try:
-        counter = 1
-        print("Meine Trainingsdaten", trains)
-    except:
-        print("Occurred at position :", counter)
-    try:
-        counter = 2
-        print("Size meiner Trainingsdaten", trains.shape)
-    except:
-        print("Occurred at position :", counter)
-    try:
-        counter = 3
-        print("Semantic Segment File Name", trains.sem_seg_file_name)
-    except:
-        print("Occurred at position :", counter)
-    try:
-        counter = 4
-        print("Panoptic Segment File Name", trains.pan_seg_file_name)
-    except:
-        print("Occurred at position :", counter)
-    """
     return cfg
-
-
-
 
 
 def predictions_on_data(directory=None,
@@ -793,10 +599,7 @@ def predictions_on_data(directory=None,
         num_to_pred = num_predictions
 
     for d in random.sample(dataset_dicts, num_to_pred):
-        #img = tiff.imread(d["file_name"])
-        with rasterio.open(d["file_name"]) as src:
-                img  = src.read()
-        #cv2.imread(d["file_name"])
+        cv2.imread(d["file_name"])
         # cv2_imshow(img)
         outputs = predictor(img)
         v = Visualizer(
@@ -834,13 +637,9 @@ if __name__ == "__main__":
     trees_metadata = MetadataCatalog.get(name + "_train")
     # dataset_dicts = get_tree_dicts("./")
     for d in dataset_dicts:
-        #img = cv2.imread(d["file_name"])
-        #img = tiff.imread(d["file_name"])
-        with rasterio.open(d["file_name"]) as src:
-            img = src.read()
+        img = cv2.imread(d["file_name"])
         visualizer = Visualizer(img[:, :, ::-1], metadata=trees_metadata, scale=0.5)
         out = visualizer.draw_dataset_dict(d)
-        #image = cv2.cvtColor(out.get_image()[:, :, ::-1], cv2.COLOR_BGR2RGB)
         # display(Image.fromarray(image))
     # Set the base (pre-trained) model from the detectron2 model_zoo
     model = "COCO-InstanceSegmentation/mask_rcnn_R_101_FPN_3x.yaml"
