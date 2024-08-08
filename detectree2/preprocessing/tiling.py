@@ -210,7 +210,7 @@ def tile_data(
                 # stack up the bands in an order appropriate for saving with cv2,
                 # then rescale to the correct 0-255 range for cv2
 
-                dualstack = np.dstack(nir, r, g)  # BGR for cv2
+                dualstack = np.dstack((nir, r, g))  # BGR for cv2
 
                 if np.max(g) > 255 or np.max(g) > 255:
                     dualstack_rescaled = 255 * dualstack / 65535
