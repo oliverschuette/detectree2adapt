@@ -169,7 +169,7 @@ def tile_data(
                 # stack up the bands in an order appropriate for saving with cv2,
                 # then rescale to the correct 0-255 range for cv2
 
-                rgb = np.dstack((g, r, nir))  # BGR for cv2
+                rgb = np.dstack((nir, r, g))  # BGR for cv2
 
                 if np.max(g) > 255:
                     rgb_rescaled = 255 * rgb / 65535
@@ -190,7 +190,7 @@ def tile_data(
                 # stack up the bands in an order appropriate for saving with cv2,
                 # then rescale to the correct 0-255 range for cv2
 
-                rgb = np.dstack((g, r, nir))  # BGR for cv2
+                rgb = np.dstack((nir, r, g))  # BGR for cv2
 
                 if np.max(g) > 255:
                     rgb_rescaled = 255 * rgb / 65535
@@ -210,7 +210,7 @@ def tile_data(
                 # stack up the bands in an order appropriate for saving with cv2,
                 # then rescale to the correct 0-255 range for cv2
 
-                dualstack = np.dstack((g, r, nir))  # BGR for cv2
+                dualstack = np.dstack((nir, r, g))  # BGR for cv2
 
                 if np.max(g) > 255 or np.max(g) > 255:
                     dualstack_rescaled = 255 * dualstack / 65535
@@ -350,14 +350,14 @@ def tile_data_train(  # noqa: C901
             
             # Case 1, we only have the CIR-Orthophoto
             if multitemp == 1:
-                nir = arr[1]
+                nir = arr[0]
                 r = arr[1]
                 g = arr[2]
 
                 # stack up the bands in an order appropriate for saving with cv2,
                 # then rescale to the correct 0-255 range for cv2
 
-                rgb = np.dstack((g, r, nir)) # BGR for cv2
+                rgb = np.dstack((nir, r, g)) # BGR for cv2
 
                 if np.max(g) > 255:
                     rgb_rescaled = 255 * rgb / 65535
@@ -377,7 +377,7 @@ def tile_data_train(  # noqa: C901
                 # stack up the bands in an order appropriate for saving with cv2,
                 # then rescale to the correct 0-255 range for cv2
 
-                rgb = np.dstack((g, r, nir)) # BGR for cv2
+                rgb = np.dstack((nir, r, g)) # BGR for cv2
 
                 if np.max(g) > 255:
                     rgb_rescaled = 255 * rgb / 65535
@@ -397,7 +397,7 @@ def tile_data_train(  # noqa: C901
                 # stack up the bands in an order appropriate for saving with cv2,
                 # then rescale to the correct 0-255 range for cv2
 
-                dualstack = np.dstack((g, r, nir))  # BGR for cv2
+                dualstack = np.dstack((nir, r, g))  # BGR for cv2
 
                 if np.max(g) > 255:
                     dualstack_rescaled = 255 * dualstack / 65535
